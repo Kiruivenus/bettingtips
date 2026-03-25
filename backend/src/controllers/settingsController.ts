@@ -136,3 +136,19 @@ const updateEnvFile = (method: string, settings: Record<string, string>) => {
     console.error('Failed to update .env file:', err);
   }
 };
+
+// @desc    Get enabled payment methods (public — no secrets exposed)
+// @route   GET /api/settings/payments/enabled
+// @access  Public
+export const getEnabledPaymentMethods = async (req: Request, res: Response) => {
+  try {
+    const allSettings = await PaymentSettings.find({});
+    const enabled: Record<string, boolean> = {};
+    allSettings.forEach(s => {
+      enabled[s.method] = s.isEnabled;
+    });
+    res.json(enabled);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching payment methods' });
+  }
+};

@@ -22,6 +22,7 @@ export default function PlansPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [enabledMethods, setEnabledMethods] = useState<Record<string, boolean>>({});
   
   // M-PESA Modal State
   const [showMpesaModal, setShowMpesaModal] = useState(false);
@@ -32,20 +33,30 @@ export default function PlansPage() {
   });
 
   useEffect(() => {
-    const fetchPlans = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/plans`);
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setPlans(data);
+        // Fetch plans and enabled payment methods in parallel
+        const [plansRes, methodsRes] = await Promise.all([
+          fetch(`${API_URL}/api/plans`),
+          fetch(`${API_URL}/api/settings/payments/enabled`),
+        ]);
+
+        if (plansRes.ok) {
+          const data = await plansRes.json();
+          if (Array.isArray(data)) setPlans(data);
+        }
+
+        if (methodsRes.ok) {
+          const methods = await methodsRes.json();
+          setEnabledMethods(methods);
         }
       } catch (error) {
-        console.error("Error fetching plans", error);
+        console.error('Error fetching data', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchPlans();
+    fetchData();
   }, []);
 
   const handleStripeCheckout = async (planId: string) => {
@@ -195,40 +206,52 @@ export default function PlansPage() {
                 </div>
                 
                 <div className="p-8 pt-0 mt-auto space-y-3">
-                  <Button 
-                    variant={isPopular ? 'primary' : 'outline'}
-                    className="w-full flex justify-center items-center"
-                    isLoading={processingId === `${plan._id}-stripe`}
-                    onClick={() => handleStripeCheckout(plan._id)}
-                    disabled={!!processingId}
-                  >
-                    {!processingId || processingId === `${plan._id}-stripe` ? (
-                      <>
-                        <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.143-3.356-2.077 0-.741.745-1.284 1.848-1.284 1.558 0 2.879.626 3.655 1.107l1.018-3.153C16.155 3.09 14.509 2.5 12.636 2.5 8.799 2.5 6.2 4.675 6.2 7.749c0 4.14 6.264 3.737 6.264 5.568 0 .899-1.01 1.408-2.228 1.408-1.748 0-3.385-.758-4.329-1.39l-1.077 3.205c1.137.669 3.065 1.258 5.176 1.258 4.09 0 6.643-2.106 6.643-5.228 0-4.475-6.671-3.69-6.671-5.412M24 11.235c0-4.81-3.921-8.735-8.735-8.735S6.529 6.424 6.529 11.235 10.45 19.97 15.265 19.97 24 16.046 24 11.235z" opacity=".05"/><path d="M13.976 9.15c-2.172-.806-3.356-1.143-3.356-2.077 0-.741.745-1.284 1.848-1.284 1.558 0 2.879.626 3.655 1.107l1.018-3.153C16.155 3.09 14.509 2.5 12.636 2.5 8.799 2.5 6.2 4.675 6.2 7.749c0 4.14 6.264 3.737 6.264 5.568 0 .899-1.01 1.408-2.228 1.408-1.748 0-3.385-.758-4.329-1.39l-1.077 3.205c1.137.669 3.065 1.258 5.176 1.258 4.09 0 6.643-2.106 6.643-5.228 0-4.475-6.671-3.69-6.671-5.412" fill="currentColor"/></svg>
-                        Pay with Card
-                      </>
-                    ) : ''}
-                  </Button>
+                  {enabledMethods.stripe && (
+                    <Button 
+                      variant={isPopular ? 'primary' : 'outline'}
+                      className="w-full flex justify-center items-center"
+                      isLoading={processingId === `${plan._id}-stripe`}
+                      onClick={() => handleStripeCheckout(plan._id)}
+                      disabled={!!processingId}
+                    >
+                      {!processingId || processingId === `${plan._id}-stripe` ? (
+                        <>
+                          <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.143-3.356-2.077 0-.741.745-1.284 1.848-1.284 1.558 0 2.879.626 3.655 1.107l1.018-3.153C16.155 3.09 14.509 2.5 12.636 2.5 8.799 2.5 6.2 4.675 6.2 7.749c0 4.14 6.264 3.737 6.264 5.568 0 .899-1.01 1.408-2.228 1.408-1.748 0-3.385-.758-4.329-1.39l-1.077 3.205c1.137.669 3.065 1.258 5.176 1.258 4.09 0 6.643-2.106 6.643-5.228 0-4.475-6.671-3.69-6.671-5.412M24 11.235c0-4.81-3.921-8.735-8.735-8.735S6.529 6.424 6.529 11.235 10.45 19.97 15.265 19.97 24 16.046 24 11.235z" opacity=".05"/><path d="M13.976 9.15c-2.172-.806-3.356-1.143-3.356-2.077 0-.741.745-1.284 1.848-1.284 1.558 0 2.879.626 3.655 1.107l1.018-3.153C16.155 3.09 14.509 2.5 12.636 2.5 8.799 2.5 6.2 4.675 6.2 7.749c0 4.14 6.264 3.737 6.264 5.568 0 .899-1.01 1.408-2.228 1.408-1.748 0-3.385-.758-4.329-1.39l-1.077 3.205c1.137.669 3.065 1.258 5.176 1.258 4.09 0 6.643-2.106 6.643-5.228 0-4.475-6.671-3.69-6.671-5.412" fill="currentColor"/></svg>
+                          Pay with Card
+                        </>
+                      ) : ''}
+                    </Button>
+                  )}
                   
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button 
-                      variant="secondary" 
-                      className="w-full text-xs px-2"
-                      isLoading={processingId === `${plan._id}-paypal`}
-                      onClick={() => handlePayPalCheckout(plan._id)}
-                      disabled={!!processingId}
-                    >
-                      {!processingId || processingId === `${plan._id}-paypal` ? 'PayPal' : ''}
-                    </Button>
-                    <Button 
-                      variant="secondary" 
-                      className="w-full text-xs px-2 bg-green-500/10 text-green-400 hover:bg-green-500/20 border-green-500/20 hover:border-green-500/30"
-                      onClick={() => openMpesaModal(plan._id)}
-                      disabled={!!processingId}
-                    >
-                      M-PESA
-                    </Button>
-                  </div>
+                  {(enabledMethods.paypal || enabledMethods.mpesa) && (
+                    <div className={`grid ${enabledMethods.paypal && enabledMethods.mpesa ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
+                      {enabledMethods.paypal && (
+                        <Button 
+                          variant="secondary" 
+                          className="w-full text-xs px-2"
+                          isLoading={processingId === `${plan._id}-paypal`}
+                          onClick={() => handlePayPalCheckout(plan._id)}
+                          disabled={!!processingId}
+                        >
+                          {!processingId || processingId === `${plan._id}-paypal` ? 'PayPal' : ''}
+                        </Button>
+                      )}
+                      {enabledMethods.mpesa && (
+                        <Button 
+                          variant="secondary" 
+                          className="w-full text-xs px-2 bg-green-500/10 text-green-400 hover:bg-green-500/20 border-green-500/20 hover:border-green-500/30"
+                          onClick={() => openMpesaModal(plan._id)}
+                          disabled={!!processingId}
+                        >
+                          M-PESA
+                        </Button>
+                      )}
+                    </div>
+                  )}
+
+                  {!enabledMethods.stripe && !enabledMethods.paypal && !enabledMethods.mpesa && (
+                    <p className="text-center text-zinc-500 text-xs py-2">No payment methods available. Contact support.</p>
+                  )}
                 </div>
               </div>
             );
