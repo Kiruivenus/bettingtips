@@ -1,0 +1,17 @@
+E:\VenusProjects\BettingTips\backend\node_modules\stripe\cjs\stripe.core.js:162
+                throw new Error('Neither apiKey nor config.authenticator provided');
+                ^
+
+Error: Neither apiKey nor config.authenticator provided
+    at Stripe._setAuthenticator (E:\VenusProjects\BettingTips\backend\node_modules\stripe\cjs\stripe.core.js:162:23)
+    at new Stripe (E:\VenusProjects\BettingTips\backend\node_modules\stripe\cjs\stripe.core.js:100:14)
+    at Object.<anonymous> (E:\VenusProjects\BettingTips\backend\dist\controllers\paymentController.js:17:16)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.require (node:internal/modules/cjs/loader:1504:12)
+
+Node.js v24.11.1

@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const paymentController_1 = require("../controllers/paymentController");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const router = express_1.default.Router();
+router.post('/manual', authMiddleware_1.protect, paymentController_1.createManualPayment);
+router.put('/approve/:id', authMiddleware_1.protect, authMiddleware_1.admin, paymentController_1.approveManualPayment);
+router.put('/reject/:id', authMiddleware_1.protect, authMiddleware_1.admin, paymentController_1.rejectManualPayment);
+router.get('/my-payments', authMiddleware_1.protect, paymentController_1.getMyPayments);
+router.get('/', authMiddleware_1.protect, authMiddleware_1.admin, paymentController_1.getAllPayments);
+router.post('/stripe/create-session', authMiddleware_1.protect, paymentController_1.createStripeSession);
+router.post('/paypal/create-payment', authMiddleware_1.protect, paymentController_1.createPayPalPayment);
+router.post('/paypal/execute-payment', authMiddleware_1.protect, paymentController_1.executePayPalPayment);
+router.post('/mpesa/stk-push', authMiddleware_1.protect, paymentController_1.createMpesaPayment);
+router.post('/mpesa/callback', paymentController_1.mpesaCallback);
+exports.default = router;
