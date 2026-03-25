@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { API_URL } from '@/lib/constants';
 
 interface Plan {
   _id: string;
@@ -22,7 +23,7 @@ export default function BuyTipsPage() {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/plans');
+        const res = await fetch(`${API_URL}/api/plans`);
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) setPlans(data.filter((p: Plan) => p.isActive));

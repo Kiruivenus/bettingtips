@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { API_URL } from '@/lib/constants';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 
@@ -26,7 +27,7 @@ function PayPalSuccessContent() {
 
     const executePayment = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/payments/paypal/execute-payment', {
+        const res = await fetch(`${API_URL}/api/payments/paypal/execute-payment`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

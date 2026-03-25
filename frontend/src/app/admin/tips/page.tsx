@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/constants';
 
 interface Tip {
   _id: string;
@@ -52,7 +53,7 @@ export default function AdminTipsPage() {
   const fetchTips = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/tips', {
+      const res = await fetch(`${API_URL}/api/tips`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
@@ -66,7 +67,7 @@ export default function AdminTipsPage() {
 
   const fetchPlans = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/plans');
+      const res = await fetch(`${API_URL}/api/plans`);
       const data = await res.json();
       setPlans(data);
     } catch (error) {
@@ -116,8 +117,8 @@ export default function AdminTipsPage() {
     setSubmitting(true);
     
     const url = currentTip 
-      ? `http://localhost:5000/api/tips/${currentTip._id}`
-      : 'http://localhost:5000/api/tips';
+      ? `${API_URL}/api/tips/${currentTip._id}`
+      : `${API_URL}/api/tips`;
     const method = currentTip ? 'PUT' : 'POST';
     
     const payload = {
@@ -152,7 +153,7 @@ export default function AdminTipsPage() {
     if (!currentTip) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/tips/${currentTip._id}`, {
+      const res = await fetch(`${API_URL}/api/tips/${currentTip._id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${user?.token}` }
       });

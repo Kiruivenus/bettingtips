@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/constants';
 
 interface Tip {
   _id: string;
@@ -27,7 +28,7 @@ export default function DashboardPage() {
         if (user?.token) {
           headers['Authorization'] = `Bearer ${user.token}`;
         }
-        const res = await fetch('http://localhost:5000/api/tips', {
+        const res = await fetch(`${API_URL}/api/tips`, {
           headers
         });
         const data = await res.json();

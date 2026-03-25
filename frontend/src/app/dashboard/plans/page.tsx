@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
@@ -33,7 +34,7 @@ export default function PlansPage() {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/plans');
+        const res = await fetch(`${API_URL}/api/plans`);
         const data = await res.json();
         if (Array.isArray(data)) {
           setPlans(data);
@@ -51,7 +52,7 @@ export default function PlansPage() {
     if (!user) return router.push('/login');
     setProcessingId(planId + '-stripe');
     try {
-      const res = await fetch('http://localhost:5000/api/payments/stripe/create-session', {
+      const res = await fetch(`${API_URL}/api/payments/stripe/create-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +75,7 @@ export default function PlansPage() {
     if (!user) return router.push('/login');
     setProcessingId(planId + '-paypal');
     try {
-      const res = await fetch('http://localhost:5000/api/payments/paypal/create-payment', {
+      const res = await fetch(`${API_URL}/api/payments/paypal/create-payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +100,7 @@ export default function PlansPage() {
     
     setMpesaStatus({ loading: true, error: '', success: '' });
     try {
-      const res = await fetch('http://localhost:5000/api/payments/mpesa/stk-push', {
+      const res = await fetch(`${API_URL}/api/payments/mpesa/stk-push`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

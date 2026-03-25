@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/constants';
 
 interface Payment {
   _id: string;
@@ -26,7 +27,7 @@ export default function AdminPaymentsPage() {
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/payments', {
+      const res = await fetch(`${API_URL}/api/payments`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
@@ -51,7 +52,7 @@ export default function AdminPaymentsPage() {
   const handleAction = async (paymentId: string, action: 'approve' | 'reject') => {
     setProcessingId(paymentId);
     try {
-      const res = await fetch(`http://localhost:5000/api/payments/${action}/${paymentId}`, {
+      const res = await fetch(`${API_URL}/api/payments/${action}/${paymentId}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${user?.token}` }
       });

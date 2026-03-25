@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/constants';
 
 interface FAQ {
   _id: string;
@@ -25,7 +26,7 @@ export default function AdminFAQsPage() {
   const fetchFAQs = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/faqs/all', {
+      const res = await fetch(`${API_URL}/api/faqs/all`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
@@ -55,7 +56,7 @@ export default function AdminFAQsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const url = currentFaq ? `http://localhost:5000/api/faqs/${currentFaq._id}` : 'http://localhost:5000/api/faqs';
+    const url = currentFaq ? `${API_URL}/api/faqs/${currentFaq._id}` : `${API_URL}/api/faqs`;
     const method = currentFaq ? 'PUT' : 'POST';
     try {
       const res = await fetch(url, {
@@ -75,7 +76,7 @@ export default function AdminFAQsPage() {
     if (!currentFaq) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/faqs/${currentFaq._id}`, {
+      const res = await fetch(`${API_URL}/api/faqs/${currentFaq._id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${user?.token}` }
       });
       if (!res.ok) throw new Error();

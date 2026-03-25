@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/constants';
 
 export default function AdminDashboardPage() {
   const { user } = useAuth();
@@ -13,8 +14,8 @@ export default function AdminDashboardPage() {
     const fetchStats = async () => {
       try {
         const [tipsRes, plansRes] = await Promise.all([
-          fetch('http://localhost:5000/api/tips'),
-          fetch('http://localhost:5000/api/plans')
+          fetch(`${API_URL}/api/tips`),
+          fetch(`${API_URL}/api/plans`)
         ]);
         
         const tips = tipsRes.ok ? await tipsRes.json() : [];

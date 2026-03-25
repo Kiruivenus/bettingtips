@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { API_URL } from '@/lib/constants';
 
 interface Tip {
   _id: string;
@@ -27,7 +28,7 @@ export default function ResultsPage() {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/tips');
+        const res = await fetch(`${API_URL}/api/tips`);
         if (res.ok) {
           const data = await res.json();
           // Only show won/lost tips on the results page

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/constants';
 
 type MethodKey = 'manual' | 'stripe' | 'paypal' | 'mpesa';
 
@@ -120,7 +121,7 @@ export default function AdminPaymentSettingsPage() {
     const fetchSettings = async () => {
       try {
         setLoading(true);
-        const res = await fetch('http://localhost:5000/api/settings/payments', {
+        const res = await fetch(`${API_URL}/api/settings/payments`, {
           headers: { Authorization: `Bearer ${user?.token}` }
         });
         if (res.ok) {
@@ -152,7 +153,7 @@ export default function AdminPaymentSettingsPage() {
     const newVal = !enabling[methodId];
     setEnabling(prev => ({ ...prev, [methodId]: newVal }));
     try {
-      await fetch(`http://localhost:5000/api/settings/payments/${methodId}`, {
+      await fetch(`${API_URL}/api/settings/payments/${methodId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user?.token}` },
         body: JSON.stringify({ isEnabled: newVal, settings: fieldValues[methodId] || {} })
@@ -166,7 +167,7 @@ export default function AdminPaymentSettingsPage() {
   const handleSave = async (methodId: MethodKey) => {
     setSaving(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/settings/payments/${methodId}`, {
+      const res = await fetch(`${API_URL}/api/settings/payments/${methodId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user?.token}` },
         body: JSON.stringify({

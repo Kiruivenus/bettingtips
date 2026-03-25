@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/constants';
 
 interface Message {
   _id: string;
@@ -23,7 +24,7 @@ export default function AdminMessagesPage() {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/contact', {
+      const res = await fetch(`${API_URL}/api/contact`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
@@ -42,7 +43,7 @@ export default function AdminMessagesPage() {
   const markRead = async (id: string) => {
     setProcessingId(id);
     try {
-      await fetch(`http://localhost:5000/api/contact/${id}/read`, { method: 'PUT', headers: { Authorization: `Bearer ${user?.token}` } });
+      await fetch(`${API_URL}/api/contact/${id}/read`, { method: 'PUT', headers: { Authorization: `Bearer ${user?.token}` } });
       setMessages(messages.map(m => m._id === id ? { ...m, isRead: true } : m));
     } catch { showToast('Failed to mark as read', 'error'); }
     finally { setProcessingId(null); }
@@ -51,7 +52,7 @@ export default function AdminMessagesPage() {
   const deleteMessage = async (id: string) => {
     setProcessingId(id);
     try {
-      await fetch(`http://localhost:5000/api/contact/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${user?.token}` } });
+      await fetch(`${API_URL}/api/contact/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${user?.token}` } });
       setMessages(messages.filter(m => m._id !== id));
       showToast('Message deleted', 'success');
     } catch { showToast('Failed to delete', 'error'); }

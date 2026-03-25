@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { API_URL } from '@/lib/constants';
 
 interface Tip {
   _id: string;
@@ -23,7 +24,7 @@ export default function FreeTipsPage() {
   useEffect(() => {
     const fetchTips = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/tips');
+        const res = await fetch(`${API_URL}/api/tips`);
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) setTips(data.filter((t: Tip) => !t.isPremium));

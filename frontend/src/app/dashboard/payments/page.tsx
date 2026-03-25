@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/constants';
 import Link from 'next/link';
 
 interface Payment {
@@ -24,7 +25,7 @@ export default function PaymentHistoryPage() {
     if (!user) return;
     const fetchPayments = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/payments/history', {
+        const res = await fetch(`${API_URL}/api/payments/history`, {
           headers: {
             'Authorization': `Bearer ${user.token}`
           }

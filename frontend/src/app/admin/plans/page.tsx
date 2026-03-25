@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/constants';
 
 interface Plan {
   _id: string;
@@ -39,7 +40,7 @@ export default function AdminPlansPage() {
   const fetchPlans = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/plans', {
+      const res = await fetch(`${API_URL}/api/plans`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
@@ -84,8 +85,8 @@ export default function AdminPlansPage() {
     setSubmitting(true);
     
     const url = currentPlan 
-      ? `http://localhost:5000/api/plans/${currentPlan._id}`
-      : 'http://localhost:5000/api/plans';
+      ? `${API_URL}/api/plans/${currentPlan._id}`
+      : `${API_URL}/api/plans`;
       
     const method = currentPlan ? 'PUT' : 'POST';
     
@@ -125,7 +126,7 @@ export default function AdminPlansPage() {
     if (!currentPlan) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/plans/${currentPlan._id}`, {
+      const res = await fetch(`${API_URL}/api/plans/${currentPlan._id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${user?.token}` }
       });

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { API_URL } from '@/lib/constants';
 
 interface Tip {
   _id: string;
@@ -46,9 +47,9 @@ export default function LandingPage() {
     const fetchData = async () => {
       try {
         const [tipsRes, plansRes, faqsRes] = await Promise.all([
-          fetch('http://localhost:5000/api/tips').catch(() => null),
-          fetch('http://localhost:5000/api/plans').catch(() => null),
-          fetch('http://localhost:5000/api/faqs').catch(() => null),
+          fetch(`${API_URL}/api/tips`).catch(() => null),
+          fetch(`${API_URL}/api/plans`).catch(() => null),
+          fetch(`${API_URL}/api/faqs`).catch(() => null),
         ]);
         if (tipsRes?.ok) { const d = await tipsRes.json(); if (Array.isArray(d)) setTips(d); }
         if (plansRes?.ok) { const d = await plansRes.json(); if (Array.isArray(d)) setPlans(d); }
@@ -74,7 +75,7 @@ export default function LandingPage() {
     e.preventDefault();
     setContactStatus('sending');
     try {
-      const res = await fetch('http://localhost:5000/api/contact', {
+      const res = await fetch(`${API_URL}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(contactForm)
