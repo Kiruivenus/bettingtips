@@ -5,149 +5,216 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/constants';
 
-interface Tip {
+interface Plan {
   _id: string;
-  match: string;
-  league: string;
-  prediction: string;
-  odds: number;
-  status: 'pending' | 'won' | 'lost';
-  isPremium: boolean;
-  matchDate: string;
+  name: string;
+  price: number;
+  currency: string;
+  durationInDays: number;
+  features: string[];
+  maxOdds: number;
+  isActive: boolean;
 }
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [tips, setTips] = useState<Tip[]>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const userActivePlan = user?.activePlan;
+  const isSubscriptionActive = user?.subscriptionExpiry
+    ? new Date(user.subscriptionExpiry) > new Date()
+    : false;
+
   useEffect(() => {
-    const fetchTips = async () => {
+    const fetchPlans = async () => {
       try {
-        const headers: any = {};
-        if (user?.token) {
-          headers['Authorization'] = `Bearer ${user.token}`;
+        const res = await fetch(`${API_URL}/api/plans`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) setPlans(data.filter((p: Plan) => p.isActive));
         }
-        const res = await fetch(`${API_URL}/api/tips`, {
-          headers
-        });
-        const data = await res.json();
-        setTips(data);
-      } catch (error) {
-        console.error("Error fetching tips", error);
+      } catch (e) {
+        console.error(e);
       } finally {
         setLoading(false);
       }
     };
+    fetchPlans();
+  }, []);
 
-    fetchTips();
-  }, [user]);
+  const isPlanOwned = (planId: string) => {
+    return isSubscriptionActive && userActivePlan === planId;
+  };
+
+  const colors = [
+    { border: 'border-blue-500/30', glow: 'shadow-[0_0_25px_rgba(59,130,246,0.1)]', accent: 'text-blue-400', bg: 'from-blue-500/10 to-blue-500/5', badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20', btn: 'bg-blue-500 hover:bg-blue-600' },
+    { border: 'border-purple-500/30', glow: 'shadow-[0_0_25px_rgba(168,85,247,0.1)]', accent: 'text-purple-400', bg: 'from-purple-500/10 to-purple-500/5', badge: 'bg-purple-500/10 text-purple-400 border-purple-500/20', btn: 'bg-purple-500 hover:bg-purple-600' },
+    { border: 'border-amber-500/30', glow: 'shadow-[0_0_25px_rgba(245,158,11,0.1)]', accent: 'text-amber-400', bg: 'from-amber-500/10 to-amber-500/5', badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20', btn: 'bg-amber-500 hover:bg-amber-600' },
+    { border: 'border-rose-500/30', glow: 'shadow-[0_0_25px_rgba(244,63,94,0.1)]', accent: 'text-rose-400', bg: 'from-rose-500/10 to-rose-500/5', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/20', btn: 'bg-rose-500 hover:bg-rose-600' },
+    { border: 'border-cyan-500/30', glow: 'shadow-[0_0_25px_rgba(6,182,212,0.1)]', accent: 'text-cyan-400', bg: 'from-cyan-500/10 to-cyan-500/5', badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20', btn: 'bg-cyan-500 hover:bg-cyan-600' },
+  ];
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Today's Betting Tips</h1>
-          <p className="text-zinc-400 text-lg">Expert predictions to give you the winning edge.</p>
-        </div>
+      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
+        <h1 className="text-3xl font-bold tracking-tight text-white mb-1">My Plans</h1>
+        <p className="text-zinc-400 text-sm">Choose a plan to view today's expert predictions.</p>
       </header>
 
       <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-8">
         {loading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="h-48 rounded-2xl bg-white/5 border border-white/5 animate-pulse" />
-          ))}
-        </div>
-      ) : tips.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 px-4 text-center border border-dashed border-white/10 rounded-2xl bg-white/5">
-          <svg className="w-16 h-16 text-zinc-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
-          <h3 className="text-xl font-medium text-white mb-2">No tips available</h3>
-          <p className="text-zinc-400">Check back later for today's predictions.</p>
-        </div>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {tips.map((tip) => (
-            <div 
-              key={tip._id} 
-              className={`relative overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group
-                ${tip.isPremium 
-                  ? 'bg-gradient-to-b from-amber-500/10 to-black/40 border-amber-500/20 hover:border-amber-500/40' 
-                  : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10 backdrop-blur-sm'
-                }
-              `}
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-72 rounded-2xl bg-white/5 border border-white/5 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+            {/* Free Plan Card – Always First */}
+            <Link
+              href="/dashboard/games/free"
+              className="group relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/10 to-emerald-500/5 p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/50 shadow-[0_0_25px_rgba(16,185,129,0.08)]"
             >
-              {tip.isPremium && (
-                <div className="absolute top-0 right-0">
-                  <div className="bg-gradient-to-r from-amber-400 to-amber-600 text-[10px] font-bold uppercase tracking-widest text-white py-1 px-3 rounded-bl-lg shadow-lg">
-                    Premium
-                  </div>
-                </div>
-              )}
-              
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-md uppercase tracking-wider">
-                      {tip.league}
-                    </span>
-                  </div>
-                  <span className={`text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wider shadow-sm
-                    ${tip.status === 'won' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' : 
-                      tip.status === 'lost' ? 'bg-red-500/20 text-red-400 border border-red-500/20' : 
-                      'bg-zinc-800 text-zinc-300 border border-zinc-700'}
-                  `}>
-                    {tip.status}
-                  </span>
-                </div>
-                
-                <h3 className="text-lg font-bold text-white mb-1 leading-tight">{tip.match}</h3>
-                <p className="text-xs text-zinc-500 mb-6 flex items-center">
-                  <svg className="w-3.5 h-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  {new Date(tip.matchDate).toLocaleString(undefined, {
-                    weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                  })}
-                </p>
-                
-                <div className="p-4 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-zinc-500 font-medium mb-1 uppercase tracking-wider">Prediction</p>
-                    <p className={`font-bold ${tip.isPremium ? 'text-amber-400' : 'text-white'}`}>
-                      {tip.prediction}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-zinc-500 font-medium mb-1 uppercase tracking-wider">Odds</p>
-                    <div className="inline-flex items-center justify-center px-3 py-1 rounded-lg bg-emerald-500 border border-emerald-400/50 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
-                      <span className="text-sm font-bold text-white">{tip.odds.toFixed(2)}</span>
-                    </div>
-                  </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+
+              <div className="flex items-center justify-between mb-5">
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-wider">
+                  Free Plan
+                </span>
+                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                 </div>
               </div>
-              
-              {/* Premium Lock Overlay for exact masking (if implemented by API, assuming API blocks prediction text) */}
-              {tip.isPremium && tip.prediction === 'Hidden' && (
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center z-10 transition-opacity">
-                  <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center mb-3">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
+
+              <h3 className="text-xl font-bold text-white mb-1">Free Betting Tips</h3>
+              <p className="text-sm text-zinc-400 mb-6 flex-1">Access our daily free predictions with full transparency and verified results.</p>
+
+              <div className="flex items-center gap-3 mb-6">
+                <div className="text-2xl font-extrabold text-emerald-400">FREE</div>
+                <span className="text-xs text-zinc-500">/ forever</span>
+              </div>
+
+              <ul className="space-y-2 mb-6">
+                {['Daily free predictions', 'Full results archive', 'Basic match analysis'].map((f, i) => (
+                  <li key={i} className="flex items-center gap-2 text-xs text-zinc-300">
+                    <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-auto flex items-center justify-center h-11 rounded-xl font-bold text-sm text-black bg-emerald-400 group-hover:bg-emerald-300 transition-colors shadow-[0_0_15px_rgba(52,211,153,0.2)]">
+                Claim Free Bet
+              </div>
+            </Link>
+
+            {/* Premium Plan Cards */}
+            {plans.map((plan, idx) => {
+              const owned = isPlanOwned(plan._id);
+              const c = colors[idx % colors.length];
+
+              return owned ? (
+                <Link
+                  key={plan._id}
+                  href={`/dashboard/games/${plan._id}`}
+                  className={`group relative overflow-hidden rounded-2xl border ${c.border} bg-gradient-to-b ${c.bg} p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 ${c.glow}`}
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+
+                  <div className="flex items-center justify-between mb-5">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${c.badge}`}>
+                      {plan.name}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 uppercase tracking-wider">Active</span>
+                      <div className={`w-8 h-8 rounded-full bg-white/10 flex items-center justify-center`}>
+                        <svg className={`w-4 h-4 ${c.accent}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-white font-bold mb-1">Premium Tip</p>
-                  <p className="text-xs text-zinc-300 mb-4">Upgrade your plan to unlock this prediction.</p>
-                  <Link href="/dashboard/plans" className="text-xs font-bold uppercase tracking-wider bg-amber-500 hover:bg-amber-600 text-black py-2 px-4 rounded-full transition-colors shadow-[0_0_15px_rgba(245,158,11,0.4)]">
-                    Upgrade Now
-                  </Link>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+
+                  <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
+                  <p className="text-sm text-zinc-400 mb-4 flex-1">Access premium predictions with up to {plan.maxOdds} odds.</p>
+
+                  <div className="flex items-baseline gap-2 mb-6">
+                    <span className={`text-2xl font-extrabold ${c.accent}`}>{plan.currency} {plan.price}</span>
+                    <span className="text-xs text-zinc-500">/ {plan.durationInDays} days</span>
+                  </div>
+
+                  {plan.features?.length > 0 && (
+                    <ul className="space-y-2 mb-6">
+                      {plan.features.slice(0, 3).map((f, i) => (
+                        <li key={i} className="flex items-center gap-2 text-xs text-zinc-300">
+                          <svg className={`w-3.5 h-3.5 ${c.accent} shrink-0`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <div className={`mt-auto flex items-center justify-center h-11 rounded-xl font-bold text-sm text-white ${c.btn} transition-colors`}>
+                    View Games →
+                  </div>
+                </Link>
+              ) : (
+                <Link
+                  key={plan._id}
+                  href="/dashboard/buy-tips"
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/60 p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 hover:border-white/20"
+                >
+                  {/* Lock Overlay */}
+                  <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px] z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl">
+                    <div className="flex flex-col items-center text-center px-6">
+                      <div className="w-14 h-14 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mb-3 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                        <svg className="w-7 h-7 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                      </div>
+                      <p className="text-white font-bold text-sm mb-1">Upgrade to Unlock</p>
+                      <p className="text-zinc-400 text-xs">Purchase this plan to access premium tips</p>
+                    </div>
+                  </div>
+
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/5 text-zinc-400 border border-white/10 text-xs font-bold uppercase tracking-wider">
+                      {plan.name}
+                    </span>
+                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
+                  <p className="text-sm text-zinc-500 mb-4 flex-1">Up to {plan.maxOdds} odds premium predictions.</p>
+
+                  <div className="flex items-baseline gap-2 mb-6">
+                    <span className="text-2xl font-extrabold text-zinc-400">{plan.currency} {plan.price}</span>
+                    <span className="text-xs text-zinc-600">/ {plan.durationInDays} days</span>
+                  </div>
+
+                  {plan.features?.length > 0 && (
+                    <ul className="space-y-2 mb-6 opacity-50">
+                      {plan.features.slice(0, 3).map((f, i) => (
+                        <li key={i} className="flex items-center gap-2 text-xs text-zinc-500">
+                          <svg className="w-3.5 h-3.5 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <div className="mt-auto flex items-center justify-center h-11 rounded-xl font-bold text-sm text-zinc-400 bg-white/5 border border-white/10 group-hover:border-amber-500/30 group-hover:text-amber-400 transition-all">
+                    <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    Locked – Buy Plan
+                  </div>
+                </Link>
+              );
+            })}
+
+          </div>
+        )}
       </div>
     </div>
   );
