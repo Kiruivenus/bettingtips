@@ -44,17 +44,18 @@ export default function DashboardPage() {
   }, [user]);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Today's Betting Tips</h1>
           <p className="text-zinc-400 text-lg">Expert predictions to give you the winning edge.</p>
         </div>
       </header>
 
-      {loading ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map(i => (
+      <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-8">
+        {loading ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map(i => (
             <div key={i} className="h-48 rounded-2xl bg-white/5 border border-white/5 animate-pulse" />
           ))}
         </div>
@@ -147,6 +148,7 @@ export default function DashboardPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

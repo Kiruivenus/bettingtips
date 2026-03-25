@@ -36,13 +36,14 @@ export default function DashboardFaqPage() {
   );
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
         <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider mb-4">❓ FAQ</div>
         <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Frequently Asked Questions</h1>
         <p className="text-zinc-400 text-lg">Everything you need to know about BettingPro.</p>
       </header>
 
+      <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-12">
       <section className="bg-zinc-900/40 border border-white/5 rounded-3xl p-6 sm:p-8">
         {loading ? (
           <div className="space-y-4">{[1, 2, 3, 4, 5].map(i => <Skeleton key={i} />)}</div>
@@ -88,6 +89,7 @@ export default function DashboardFaqPage() {
           </div>
         )}
       </section>
+      </div>
     </div>
   );
 }

@@ -88,7 +88,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <div className="ml-3 overflow-hidden flex-1">
               <p className="text-sm font-medium text-white truncate">{user.name || 'User'}</p>
-              <p className="text-[11px] text-emerald-400 font-medium uppercase tracking-wider">{user.role}</p>
+              <p className="text-xs text-zinc-400 truncate">{user.email}</p>
             </div>
           </div>
           <button onClick={logout} className="w-full flex items-center justify-center px-4 py-2.5 text-sm font-medium text-red-400 bg-red-500/5 hover:bg-red-500/15 border border-red-500/10 hover:border-red-500/30 rounded-xl transition-all duration-300">
@@ -118,7 +118,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 relative z-10 w-full max-w-6xl mx-auto">
+        <div className="flex-1 overflow-y-auto relative z-10 w-full max-w-6xl mx-auto">
           {children}
         </div>
       </main>

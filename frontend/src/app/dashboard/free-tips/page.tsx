@@ -45,8 +45,8 @@ export default function DashboardFreeTipsPage() {
   const successRate = totalResolved > 0 ? Math.round((wins / totalResolved) * 100) : 0;
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Free Football Tips</h1>
         <p className="text-zinc-400 text-lg">Expert football predictions, verified results, completely free.</p>
         
@@ -70,6 +70,7 @@ export default function DashboardFreeTipsPage() {
         </div>
       </header>
 
+      <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-12">
       {/* Today's Free Tips */}
       <section>
         <h2 className="text-2xl font-extrabold text-white mb-2">Today's Picks</h2>
@@ -159,6 +160,7 @@ export default function DashboardFreeTipsPage() {
           </div>
         )}
       </section>
+      </div>
     </div>
   );
 }

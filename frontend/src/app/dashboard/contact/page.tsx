@@ -25,12 +25,14 @@ export default function DashboardContactPage() {
   };
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-2xl mx-auto">
-      <header className="text-center">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 text-center">
         <div className="inline-flex items-center px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold uppercase tracking-wider mb-4">✉️ Get In Touch</div>
         <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Contact Us</h1>
-        <p className="text-zinc-400 text-lg">Have a question about our tips or payment? We typically reply within a few hours.</p>
+        <p className="text-zinc-400 text-sm">Have a question about our tips or payment? We typically reply within a few hours.</p>
       </header>
+
+      <div className="px-4 sm:px-6 md:px-8 pb-8 max-w-2xl mx-auto">
 
       <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-8 shadow-xl">
         {contactStatus === 'sent' ? (
@@ -104,6 +106,7 @@ export default function DashboardContactPage() {
             </button>
           </form>
         )}
+      </div>
       </div>
     </div>
   );

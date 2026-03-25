@@ -70,8 +70,8 @@ export default function DashboardResultsPage() {
   );
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
         <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-4">
           📊 Accuracy Archive
         </div>
@@ -81,6 +81,7 @@ export default function DashboardResultsPage() {
         </p>
       </header>
 
+      <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-12">
       {loading ? (
         <div className="space-y-12">
           {[1, 2].map(i => (
@@ -144,6 +145,7 @@ export default function DashboardResultsPage() {
           <p className="text-zinc-500 font-bold italic">No match results archived yet.</p>
         </div>
       )}
+      </div>
     </div>
   );
 }

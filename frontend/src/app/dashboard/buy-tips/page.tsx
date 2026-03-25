@@ -45,8 +45,8 @@ export default function DashboardBuyTipsPage() {
   ];
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="relative overflow-hidden">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 relative overflow-hidden">
         <div className="absolute top-0 right-[-5%] w-[40%] h-[100%] rounded-full bg-emerald-500/8 blur-[100px] pointer-events-none" />
         <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Buy Football Betting Tips</h1>
         <p className="text-zinc-400 text-lg max-w-2xl">
@@ -54,6 +54,7 @@ export default function DashboardBuyTipsPage() {
         </p>
       </header>
 
+      <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-12">
       <section>
         {loading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -120,6 +121,7 @@ export default function DashboardBuyTipsPage() {
           </div>
         )}
       </section>
+      </div>
     </div>
   );
 }

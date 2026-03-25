@@ -132,12 +132,13 @@ export default function PlansPage() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 relative">
-      <header className="text-center max-w-2xl mx-auto mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4">Elite Betting Plans</h1>
-        <p className="text-zinc-400 text-lg">Choose the perfect plan to elevate your betting strategy with our expert predictions and analysis.</p>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 relative overflow-x-hidden">
+      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 text-center max-w-none">
+        <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Elite Betting Plans</h1>
+        <p className="text-zinc-400 text-sm max-w-2xl mx-auto">Choose the perfect plan to elevate your betting strategy with our expert predictions and analysis.</p>
       </header>
 
+      <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-8">
       {loading ? (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
           {[1, 2, 3].map(i => (
@@ -276,6 +277,7 @@ export default function PlansPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

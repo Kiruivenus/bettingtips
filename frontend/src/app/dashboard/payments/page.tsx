@@ -46,11 +46,12 @@ export default function PaymentHistoryPage() {
   if (loading) {
     return (
       <div className="animate-in fade-in zoom-in-95 duration-500">
-        <header className="mb-8">
-          <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Payment History</h1>
-          <p className="text-zinc-400">Loading your transactions...</p>
+        <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 flex flex-col justify-center">
+          <h1 className="text-3xl font-bold tracking-tight text-white mb-1">Payment History</h1>
+          <p className="text-zinc-400 text-sm">Loading your transactions...</p>
         </header>
-        <div className="space-y-4">
+
+        <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-4">
           {[1,2,3].map(i => <div key={i} className="h-24 bg-white/5 animate-pulse rounded-2xl border border-white/5" />)}
         </div>
       </div>
@@ -59,11 +60,12 @@ export default function PaymentHistoryPage() {
 
   return (
     <div className="animate-in fade-in zoom-in-95 duration-500">
-      <header className="mb-8">
-        <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Payment History</h1>
-        <p className="text-zinc-400">View all your past and pending subscriptions.</p>
+      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 flex flex-col justify-center">
+        <h1 className="text-3xl font-bold tracking-tight text-white mb-1">Payment History</h1>
+        <p className="text-zinc-400 text-sm">View all your past and pending subscriptions.</p>
       </header>
 
+      <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-8">
       {payments.length === 0 ? (
         <div className="text-center py-20 px-4 bg-white/5 border border-white/10 rounded-2xl">
           <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-4">
@@ -116,6 +118,7 @@ export default function PaymentHistoryPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
