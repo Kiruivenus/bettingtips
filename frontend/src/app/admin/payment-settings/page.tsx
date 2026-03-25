@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/constants';
 
-type MethodKey = 'manual' | 'stripe' | 'paypal' | 'mpesa';
+type MethodKey = 'manual' | 'stripe' | 'paypal' | 'mpesa' | 'skrill' | 'neteller' | 'crypto' | 'revolut' | 'wise';
 
 interface MethodConfig {
   id: MethodKey;
@@ -44,18 +44,9 @@ const METHODS: MethodConfig[] = [
     icon: '💳',
     color: 'border-indigo-500/30 bg-indigo-500/5',
     fields: [
-      {
-        key: 'publishableKey', label: 'Publishable Key', type: 'text',
-        placeholder: 'pk_live_...', hint: 'Your public Stripe key (starts with pk_live_ or pk_test_)'
-      },
-      {
-        key: 'secretKey', label: 'Secret Key', type: 'password',
-        placeholder: 'sk_live_...', hint: 'Your secret Stripe key. Never share this publicly.'
-      },
-      {
-        key: 'webhookSecret', label: 'Webhook Signing Secret', type: 'password',
-        placeholder: 'whsec_...', hint: 'Found in Stripe Dashboard → Webhooks. Required for payment verification.'
-      },
+      { key: 'publishableKey', label: 'Publishable Key', type: 'text', placeholder: 'pk_live_...', hint: 'Your public Stripe key (starts with pk_live_ or pk_test_)' },
+      { key: 'secretKey', label: 'Secret Key', type: 'password', placeholder: 'sk_live_...', hint: 'Your secret Stripe key. Never share this publicly.' },
+      { key: 'webhookSecret', label: 'Webhook Signing Secret', type: 'password', placeholder: 'whsec_...', hint: 'Found in Stripe Dashboard → Webhooks.' },
     ],
   },
   {
@@ -65,43 +56,80 @@ const METHODS: MethodConfig[] = [
     icon: '🅿️',
     color: 'border-sky-500/30 bg-sky-500/5',
     fields: [
-      {
-        key: 'clientId', label: 'Client ID', type: 'text',
-        placeholder: 'AXxx...', hint: 'From PayPal Developer Dashboard → Apps & Credentials'
-      },
-      {
-        key: 'clientSecret', label: 'Client Secret', type: 'password',
-        placeholder: 'EXxx...', hint: 'Your PayPal app secret key.'
-      },
-      {
-        key: 'mode', label: 'Environment', type: 'select',
-        options: ['sandbox', 'live'], hint: 'Use sandbox for testing, switch to live for production.'
-      },
+      { key: 'clientId', label: 'Client ID', type: 'text', placeholder: 'AXxx...', hint: 'From PayPal Developer Dashboard' },
+      { key: 'clientSecret', label: 'Client Secret', type: 'password', placeholder: 'EXxx...', hint: 'Your PayPal app secret key.' },
+      { key: 'mode', label: 'Environment', type: 'select', options: ['sandbox', 'live'], hint: 'Use sandbox for testing, live for production.' },
     ],
   },
   {
     id: 'mpesa',
     label: 'M-Pesa STK Push (Automatic)',
-    description: 'Accept M-Pesa payments automatically via Safaricom Daraja API. Requires developer credentials.',
+    description: 'Accept M-Pesa payments automatically via Safaricom Daraja API.',
     icon: '📱',
     color: 'border-emerald-500/30 bg-emerald-500/5',
     fields: [
-      {
-        key: 'consumerKey', label: 'Consumer Key', type: 'text',
-        placeholder: 'xxxx...', hint: 'From Safaricom Daraja Portal → My Apps'
-      },
-      {
-        key: 'consumerSecret', label: 'Consumer Secret', type: 'password',
-        placeholder: 'xxxx...', hint: 'Your Daraja app consumer secret.'
-      },
-      {
-        key: 'passkey', label: 'Lipa Na M-Pesa Passkey', type: 'password',
-        placeholder: 'bfb279...', hint: 'From Safaricom Till registration or test credentials.'
-      },
-      {
-        key: 'shortcode', label: 'Shortcode / Paybill', type: 'text',
-        placeholder: '174379', hint: 'Your Business Shortcode. Use 174379 for sandbox.'
-      },
+      { key: 'consumerKey', label: 'Consumer Key', type: 'text', placeholder: 'xxxx...', hint: 'From Safaricom Daraja Portal' },
+      { key: 'consumerSecret', label: 'Consumer Secret', type: 'password', placeholder: 'xxxx...' },
+      { key: 'passkey', label: 'Lipa Na M-Pesa Passkey', type: 'password', placeholder: 'bfb279...' },
+      { key: 'shortcode', label: 'Shortcode / Paybill', type: 'text', placeholder: '174379', hint: 'Use 174379 for sandbox.' },
+    ],
+  },
+  {
+    id: 'skrill',
+    label: 'Skrill',
+    description: 'Accept Skrill e-wallet payments. Users send to your Skrill email and submit proof.',
+    icon: '💰',
+    color: 'border-purple-500/30 bg-purple-500/5',
+    fields: [
+      { key: 'email', label: 'Skrill Email', type: 'text', placeholder: 'your@skrill.com' },
+      { key: 'instructions', label: 'Payment Instructions', type: 'textarea', placeholder: 'Send payment to the Skrill email above and submit your transaction ID.' },
+    ],
+  },
+  {
+    id: 'neteller',
+    label: 'Neteller',
+    description: 'Accept Neteller e-wallet payments. Users send to your Neteller account and submit proof.',
+    icon: '💵',
+    color: 'border-green-500/30 bg-green-500/5',
+    fields: [
+      { key: 'email', label: 'Neteller Email / Account ID', type: 'text', placeholder: 'your@neteller.com' },
+      { key: 'instructions', label: 'Payment Instructions', type: 'textarea', placeholder: 'Send payment to the Neteller account above and submit your transaction ID.' },
+    ],
+  },
+  {
+    id: 'crypto',
+    label: 'Cryptocurrency',
+    description: 'Accept crypto payments (BTC, ETH, USDT, etc). Users send to your wallet address.',
+    icon: '₿',
+    color: 'border-orange-500/30 bg-orange-500/5',
+    fields: [
+      { key: 'walletAddress', label: 'Wallet Address', type: 'text', placeholder: '0x... or bc1...' },
+      { key: 'network', label: 'Network / Chain', type: 'text', placeholder: 'e.g. BTC, ETH (ERC-20), TRC-20' },
+      { key: 'acceptedCoins', label: 'Accepted Coins', type: 'text', placeholder: 'e.g. BTC, ETH, USDT' },
+      { key: 'instructions', label: 'Payment Instructions', type: 'textarea', placeholder: 'Send payment to the wallet address above. Include the transaction hash when submitting.' },
+    ],
+  },
+  {
+    id: 'revolut',
+    label: 'Revolut',
+    description: 'Accept Revolut payments. Users send via Revolut and submit proof.',
+    icon: '🔄',
+    color: 'border-blue-400/30 bg-blue-400/5',
+    fields: [
+      { key: 'username', label: 'Revolut Username / Tag', type: 'text', placeholder: '@yourtag' },
+      { key: 'instructions', label: 'Payment Instructions', type: 'textarea', placeholder: 'Send payment to the Revolut tag above and submit a screenshot.' },
+    ],
+  },
+  {
+    id: 'wise',
+    label: 'Wise (TransferWise)',
+    description: 'Accept Wise international transfers. Users send to your Wise account.',
+    icon: '🌍',
+    color: 'border-teal-500/30 bg-teal-500/5',
+    fields: [
+      { key: 'email', label: 'Wise Email', type: 'text', placeholder: 'your@email.com' },
+      { key: 'accountHolder', label: 'Account Holder Name', type: 'text', placeholder: 'John Doe' },
+      { key: 'instructions', label: 'Payment Instructions', type: 'textarea', placeholder: 'Send payment via Wise to the email above and submit your transaction reference.' },
     ],
   },
 ];
@@ -381,7 +409,7 @@ export default function AdminPaymentSettingsPage() {
             </div>
 
             {/* Overview cards */}
-            <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="mt-6 grid grid-cols-3 sm:grid-cols-5 gap-3">
               {METHODS.map(m => (
                 <div key={m.id} className={`p-4 rounded-xl border text-center ${enabling[m.id] ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-white/5 bg-white/3'}`}>
                   <div className="text-2xl mb-2">{m.icon}</div>

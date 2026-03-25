@@ -22,7 +22,7 @@ export default function PlansPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
-  const [enabledMethods, setEnabledMethods] = useState<Record<string, boolean>>({});
+  const [enabledMethods, setEnabledMethods] = useState<Record<string, { isEnabled: boolean; details?: Record<string, string> }>>({});
   
   // M-PESA Modal State
   const [showMpesaModal, setShowMpesaModal] = useState(false);
@@ -31,6 +31,18 @@ export default function PlansPage() {
   const [mpesaStatus, setMpesaStatus] = useState<{loading: boolean, error: string, success: string}>({
     loading: false, error: '', success: ''
   });
+
+  // Manual Payment Modal State
+  const [showManualModal, setShowManualModal] = useState(false);
+  const [selectedManualMethod, setSelectedManualMethod] = useState<string>('');
+  const [selectedPlanForManual, setSelectedPlanForManual] = useState<string | null>(null);
+  const [manualTxId, setManualTxId] = useState('');
+  const [manualStatus, setManualStatus] = useState<{loading: boolean, error: string, success: string}>({
+    loading: false, error: '', success: ''
+  });
+
+  const isMethodEnabled = (method: string) => enabledMethods[method]?.isEnabled === true;
+  const getMethodDetails = (method: string) => enabledMethods[method]?.details;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -206,7 +218,7 @@ export default function PlansPage() {
                 </div>
                 
                 <div className="p-8 pt-0 mt-auto space-y-3">
-                  {enabledMethods.stripe && (
+                  {isMethodEnabled('stripe') && (
                     <Button 
                       variant={isPopular ? 'primary' : 'outline'}
                       className="w-full flex justify-center items-center"
@@ -223,9 +235,9 @@ export default function PlansPage() {
                     </Button>
                   )}
                   
-                  {(enabledMethods.paypal || enabledMethods.mpesa) && (
-                    <div className={`grid ${enabledMethods.paypal && enabledMethods.mpesa ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
-                      {enabledMethods.paypal && (
+                  {(isMethodEnabled('paypal') || isMethodEnabled('mpesa')) && (
+                    <div className={`grid ${isMethodEnabled('paypal') && isMethodEnabled('mpesa') ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
+                      {isMethodEnabled('paypal') && (
                         <Button 
                           variant="secondary" 
                           className="w-full text-xs px-2"
@@ -236,7 +248,7 @@ export default function PlansPage() {
                           {!processingId || processingId === `${plan._id}-paypal` ? 'PayPal' : ''}
                         </Button>
                       )}
-                      {enabledMethods.mpesa && (
+                      {isMethodEnabled('mpesa') && (
                         <Button 
                           variant="secondary" 
                           className="w-full text-xs px-2 bg-green-500/10 text-green-400 hover:bg-green-500/20 border-green-500/20 hover:border-green-500/30"
@@ -249,7 +261,34 @@ export default function PlansPage() {
                     </div>
                   )}
 
-                  {!enabledMethods.stripe && !enabledMethods.paypal && !enabledMethods.mpesa && (
+                  {/* Manual Payment Methods */}
+                  {(() => {
+                    const manualMethods = [
+                      { id: 'manual', label: '🏦 Bank Transfer', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20' },
+                      { id: 'skrill', label: '💰 Skrill', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20 hover:bg-purple-500/20' },
+                      { id: 'neteller', label: '💵 Neteller', color: 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20' },
+                      { id: 'crypto', label: '₿ Crypto', color: 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20' },
+                      { id: 'revolut', label: '🔄 Revolut', color: 'bg-blue-400/10 text-blue-300 border-blue-400/20 hover:bg-blue-400/20' },
+                      { id: 'wise', label: '🌍 Wise', color: 'bg-teal-500/10 text-teal-400 border-teal-500/20 hover:bg-teal-500/20' },
+                    ];
+                    const enabled = manualMethods.filter(m => isMethodEnabled(m.id));
+                    if (enabled.length === 0) return null;
+                    return (
+                      <div className="grid grid-cols-2 gap-2">
+                        {enabled.map(m => (
+                          <button
+                            key={m.id}
+                            onClick={() => { setSelectedManualMethod(m.id); setSelectedPlanForManual(plan._id); setManualTxId(''); setManualStatus({ loading: false, error: '', success: '' }); setShowManualModal(true); }}
+                            className={`text-xs font-bold py-2 px-3 rounded-xl border transition-all ${m.color}`}
+                          >
+                            {m.label}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  {!isMethodEnabled('stripe') && !isMethodEnabled('paypal') && !isMethodEnabled('mpesa') && !isMethodEnabled('manual') && !isMethodEnabled('skrill') && !isMethodEnabled('neteller') && !isMethodEnabled('crypto') && !isMethodEnabled('revolut') && !isMethodEnabled('wise') && (
                     <p className="text-center text-zinc-500 text-xs py-2">No payment methods available. Contact support.</p>
                   )}
                 </div>
@@ -280,21 +319,77 @@ export default function PlansPage() {
                 required
               />
               <div className="flex gap-3 pt-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => setShowMpesaModal(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-[#52B520] hover:bg-[#439c18] text-white shadow-none"
-                  isLoading={mpesaStatus.loading}
-                >
-                  Pay Now
-                </Button>
+                <Button type="button" variant="outline" className="w-full" onClick={() => setShowMpesaModal(false)}>Cancel</Button>
+                <Button type="submit" className="w-full bg-[#52B520] hover:bg-[#439c18] text-white shadow-none" isLoading={mpesaStatus.loading}>Pay Now</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Payment Modal */}
+      {showManualModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowManualModal(false)} />
+          <div className="relative bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-white mb-1">
+              {selectedManualMethod === 'manual' ? 'Bank Transfer' : selectedManualMethod === 'crypto' ? 'Cryptocurrency' : selectedManualMethod.charAt(0).toUpperCase() + selectedManualMethod.slice(1)} Payment
+            </h3>
+            <p className="text-sm text-zinc-400 mb-5">Send payment using the details below, then submit your transaction ID.</p>
+            
+            {/* Payment Details */}
+            {(() => {
+              const details = getMethodDetails(selectedManualMethod);
+              if (!details) return <p className="text-zinc-500 text-sm mb-4">Payment details not configured. Contact support.</p>;
+              return (
+                <div className="bg-black/40 border border-white/10 rounded-xl p-4 mb-5 space-y-2">
+                  {details.email && <div className="flex justify-between text-sm"><span className="text-zinc-500">Email:</span><span className="text-white font-mono text-xs break-all">{details.email}</span></div>}
+                  {details.username && <div className="flex justify-between text-sm"><span className="text-zinc-500">Username:</span><span className="text-white font-mono">{details.username}</span></div>}
+                  {details.walletAddress && <div className="text-sm"><span className="text-zinc-500 block mb-1">Wallet Address:</span><span className="text-white font-mono text-xs break-all bg-black/40 p-2 rounded-lg block">{details.walletAddress}</span></div>}
+                  {details.network && <div className="flex justify-between text-sm"><span className="text-zinc-500">Network:</span><span className="text-white">{details.network}</span></div>}
+                  {details.acceptedCoins && <div className="flex justify-between text-sm"><span className="text-zinc-500">Accepted:</span><span className="text-white">{details.acceptedCoins}</span></div>}
+                  {details.accountHolder && <div className="flex justify-between text-sm"><span className="text-zinc-500">Name:</span><span className="text-white">{details.accountHolder}</span></div>}
+                  {details.bankName && <div className="flex justify-between text-sm"><span className="text-zinc-500">Bank:</span><span className="text-white">{details.bankName}</span></div>}
+                  {details.accountName && <div className="flex justify-between text-sm"><span className="text-zinc-500">Account Name:</span><span className="text-white">{details.accountName}</span></div>}
+                  {details.accountNumber && <div className="flex justify-between text-sm"><span className="text-zinc-500">Account No:</span><span className="text-white font-mono">{details.accountNumber}</span></div>}
+                  {details.mpesaNumber && <div className="flex justify-between text-sm"><span className="text-zinc-500">M-Pesa:</span><span className="text-white font-mono">{details.mpesaNumber}</span></div>}
+                  {details.instructions && <div className="mt-3 pt-3 border-t border-white/10"><p className="text-zinc-400 text-xs italic">{details.instructions}</p></div>}
+                </div>
+              );
+            })()}
+
+            {manualStatus.error && <p className="text-red-400 text-sm mb-4 bg-red-400/10 p-2 rounded-lg">{manualStatus.error}</p>}
+            {manualStatus.success && <p className="text-emerald-400 text-sm mb-4 bg-emerald-400/10 p-2 rounded-lg">{manualStatus.success}</p>}
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!selectedPlanForManual || !manualTxId.trim()) return;
+              setManualStatus({ loading: true, error: '', success: '' });
+              try {
+                const plan = plans.find(p => p._id === selectedPlanForManual);
+                const res = await fetch(`${API_URL}/api/payments/manual`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user?.token}` },
+                  body: JSON.stringify({ planId: selectedPlanForManual, amount: plan?.price || 0, transactionId: manualTxId, method: selectedManualMethod }),
+                });
+                if (!res.ok) throw new Error();
+                setManualStatus({ loading: false, error: '', success: 'Payment submitted! It will be reviewed and activated shortly.' });
+                setManualTxId('');
+              } catch {
+                setManualStatus({ loading: false, error: 'Failed to submit payment. Try again.', success: '' });
+              }
+            }} className="space-y-4">
+              <Input 
+                autoFocus
+                label="Transaction ID / Reference" 
+                placeholder="Enter your payment reference or transaction ID" 
+                value={manualTxId}
+                onChange={(e) => setManualTxId(e.target.value)}
+                required
+              />
+              <div className="flex gap-3 pt-2">
+                <Button type="button" variant="outline" className="w-full" onClick={() => setShowManualModal(false)}>Cancel</Button>
+                <Button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-white shadow-none" isLoading={manualStatus.loading}>Submit Payment</Button>
               </div>
             </form>
           </div>

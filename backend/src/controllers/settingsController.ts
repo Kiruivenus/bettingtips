@@ -43,7 +43,7 @@ export const updatePaymentSettings = async (req: AuthRequest, res: Response) => 
     const method: string = req.params.method as string;
     const { isEnabled, settings } = req.body;
 
-    const validMethods = ['manual', 'stripe', 'paypal', 'mpesa'];
+    const validMethods = ['manual', 'stripe', 'paypal', 'mpesa', 'skrill', 'neteller', 'crypto', 'revolut', 'wise'];
     if (!validMethods.includes(method)) {
       return res.status(400).json({ message: 'Invalid payment method' });
     }
@@ -143,11 +143,21 @@ const updateEnvFile = (method: string, settings: Record<string, string>) => {
 export const getEnabledPaymentMethods = async (req: Request, res: Response) => {
   try {
     const allSettings = await PaymentSettings.find({});
-    const enabled: Record<string, boolean> = {};
+
+    // Fields that are safe to expose publicly (non-API-key fields)
+    const safeFields = ['email', 'username', 'walletAddress', 'network', 'acceptedCoins', 'accountHolder', 'bankName', 'accountName', 'accountNumber', 'mpesaNumber', 'instructions'];
+
+    const result: Record<string, { isEnabled: boolean; details?: Record<string, string> }> = {};
     allSettings.forEach(s => {
-      enabled[s.method] = s.isEnabled;
+      const details: Record<string, string> = {};
+      if (s.settings instanceof Map) {
+        s.settings.forEach((v, k) => {
+          if (safeFields.includes(k)) details[k] = v;
+        });
+      }
+      result[s.method] = { isEnabled: s.isEnabled, details: Object.keys(details).length > 0 ? details : undefined };
     });
-    res.json(enabled);
+    res.json(result);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching payment methods' });
   }
