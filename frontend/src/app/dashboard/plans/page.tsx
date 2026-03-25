@@ -265,6 +265,10 @@ export default function PlansPage() {
                   {(() => {
                     const manualMethods = [
                       { id: 'manual', label: '🏦 Bank Transfer', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20' },
+                      { id: 'mpesa_manual', label: '📲 M-Pesa Send', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20' },
+                      { id: 'till', label: '🏪 M-Pesa Till', color: 'bg-green-600/10 text-green-500 border-green-600/20 hover:bg-green-600/20' },
+                      { id: 'airtel', label: '🔴 Airtel Money', color: 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20' },
+                      { id: 'paypal_ff', label: '🤝 PayPal F&F', color: 'bg-sky-500/10 text-sky-400 border-sky-500/20 hover:bg-sky-500/20' },
                       { id: 'skrill', label: '💰 Skrill', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20 hover:bg-purple-500/20' },
                       { id: 'neteller', label: '💵 Neteller', color: 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20' },
                       { id: 'crypto', label: '₿ Crypto', color: 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20' },
@@ -333,7 +337,13 @@ export default function PlansPage() {
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowManualModal(false)} />
           <div className="relative bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-white mb-1">
-              {selectedManualMethod === 'manual' ? 'Bank Transfer' : selectedManualMethod === 'crypto' ? 'Cryptocurrency' : selectedManualMethod.charAt(0).toUpperCase() + selectedManualMethod.slice(1)} Payment
+              {selectedManualMethod === 'manual' ? 'Bank Transfer' : 
+               selectedManualMethod === 'crypto' ? 'Cryptocurrency' : 
+               selectedManualMethod === 'mpesa_manual' ? 'M-Pesa Send Money' :
+               selectedManualMethod === 'paypal_ff' ? 'PayPal Friends & Family' :
+               selectedManualMethod === 'till' ? 'Lipa Na M-Pesa Till' :
+               selectedManualMethod === 'airtel' ? 'Airtel Money' :
+               selectedManualMethod.charAt(0).toUpperCase() + selectedManualMethod.slice(1)} Payment
             </h3>
             <p className="text-sm text-zinc-400 mb-5">Send payment using the details below, then submit your transaction ID.</p>
             

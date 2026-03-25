@@ -62,11 +62,12 @@ export const approveManualPayment = async (req: AuthRequest, res: Response) => {
 
     // Assign plan to user
     const user = await User.findById(payment.user);
-    if (user) {
-      user.activePlan = plan._id;
+    if (user && plan) {
+      user.activePlan = plan._id as any;
       
       const expiry = new Date();
-      expiry.setDate(expiry.getDate() + (plan.durationInDays || 30));
+      const duration = plan.durationInDays || 30; // Fallback to 30 days
+      expiry.setDate(expiry.getDate() + duration);
       user.subscriptionExpiry = expiry;
       
       await user.save();

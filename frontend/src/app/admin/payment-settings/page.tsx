@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/constants';
 
-type MethodKey = 'manual' | 'stripe' | 'paypal' | 'mpesa' | 'skrill' | 'neteller' | 'crypto' | 'revolut' | 'wise';
+type MethodKey = 'manual' | 'stripe' | 'paypal' | 'mpesa' | 'skrill' | 'neteller' | 'crypto' | 'revolut' | 'wise' | 'mpesa_manual' | 'paypal_ff' | 'till' | 'airtel';
 
 interface MethodConfig {
   id: MethodKey;
@@ -130,6 +130,52 @@ const METHODS: MethodConfig[] = [
       { key: 'email', label: 'Wise Email', type: 'text', placeholder: 'your@email.com' },
       { key: 'accountHolder', label: 'Account Holder Name', type: 'text', placeholder: 'John Doe' },
       { key: 'instructions', label: 'Payment Instructions', type: 'textarea', placeholder: 'Send payment via Wise to the email above and submit your transaction reference.' },
+    ],
+  },
+  {
+    id: 'mpesa_manual',
+    label: 'M-Pesa Send Money (Manual)',
+    description: 'Accept manual M-Pesa transfers to your phone number. Users send money and submit M-Pesa reference.',
+    icon: '📲',
+    color: 'border-emerald-400/30 bg-emerald-400/5',
+    fields: [
+      { key: 'phoneNumber', label: 'M-Pesa Number', type: 'text', placeholder: 'e.g. 0712345678' },
+      { key: 'accountName', label: 'Name on M-Pesa', type: 'text', placeholder: 'e.g. John Doe' },
+      { key: 'instructions', label: 'Payment Instructions', type: 'textarea', placeholder: 'Send money to the number above and enter your M-Pesa transaction code below.' },
+    ],
+  },
+  {
+    id: 'paypal_ff',
+    label: 'PayPal Friends & Family',
+    description: 'Accept PayPal payments via Friends & Family mode. Avoids automatic gateway fees.',
+    icon: '🤝',
+    color: 'border-sky-400/30 bg-sky-400/5',
+    fields: [
+      { key: 'email', label: 'PayPal Email', type: 'text', placeholder: 'your@email.com' },
+      { key: 'instructions', label: 'Payment Instructions', type: 'textarea', placeholder: 'Send via Friends & Family to the email above and submit your PayPal transaction ID.' },
+    ],
+  },
+  {
+    id: 'till',
+    label: 'Lipa Na M-Pesa Till',
+    description: 'Accept payments via your M-Pesa Buy Goods/Services Till number.',
+    icon: '🏪',
+    color: 'border-green-600/30 bg-green-600/5',
+    fields: [
+      { key: 'tillNumber', label: 'Till Number', type: 'text', placeholder: 'e.g. 123456' },
+      { key: 'instructions', label: 'Payment Instructions', type: 'textarea', placeholder: 'Go to Lipa Na M-Pesa -> Buy Goods -> Enter Till below. Submit your M-Pesa message reference.' },
+    ],
+  },
+  {
+    id: 'airtel',
+    label: 'Airtel Money',
+    description: 'Accept manual Airtel Money transfers to your phone number.',
+    icon: '🔴',
+    color: 'border-red-500/30 bg-red-500/5',
+    fields: [
+      { key: 'phoneNumber', label: 'Airtel Number', type: 'text', placeholder: 'e.g. 0733123456' },
+      { key: 'accountName', label: 'Name on Airtel Money', type: 'text', placeholder: 'e.g. Jane Doe' },
+      { key: 'instructions', label: 'Payment Instructions', type: 'textarea', placeholder: 'Send money to the Airtel number above and submit your transaction ID.' },
     ],
   },
 ];

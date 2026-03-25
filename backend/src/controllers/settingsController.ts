@@ -43,7 +43,7 @@ export const updatePaymentSettings = async (req: AuthRequest, res: Response) => 
     const method: string = req.params.method as string;
     const { isEnabled, settings } = req.body;
 
-    const validMethods = ['manual', 'stripe', 'paypal', 'mpesa', 'skrill', 'neteller', 'crypto', 'revolut', 'wise'];
+    const validMethods = ['manual', 'stripe', 'paypal', 'mpesa', 'skrill', 'neteller', 'crypto', 'revolut', 'wise', 'mpesa_manual', 'paypal_ff', 'till', 'airtel'];
     if (!validMethods.includes(method)) {
       return res.status(400).json({ message: 'Invalid payment method' });
     }
@@ -145,7 +145,7 @@ export const getEnabledPaymentMethods = async (req: Request, res: Response) => {
     const allSettings = await PaymentSettings.find({});
 
     // Fields that are safe to expose publicly (non-API-key fields)
-    const safeFields = ['email', 'username', 'walletAddress', 'network', 'acceptedCoins', 'accountHolder', 'bankName', 'accountName', 'accountNumber', 'mpesaNumber', 'instructions'];
+    const safeFields = ['email', 'username', 'walletAddress', 'network', 'acceptedCoins', 'accountHolder', 'bankName', 'accountName', 'accountNumber', 'mpesaNumber', 'instructions', 'phoneNumber', 'tillNumber'];
 
     const result: Record<string, { isEnabled: boolean; details?: Record<string, string> }> = {};
     allSettings.forEach(s => {
