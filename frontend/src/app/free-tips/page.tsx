@@ -48,7 +48,7 @@ export default function FreeTipsPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans">
       {/* Navbar */}
-      <nav className="fixed w-full z-50 top-0 border-b border-white/5 bg-black/60 backdrop-blur-xl">
+      <nav className="fixed top-0 left-0 right-0 w-full z-[100] border-b border-white/5 bg-black/60 backdrop-blur-xl transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <Image src="/logo.png" alt="BettingPro" width={36} height={36} className="rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
@@ -58,6 +58,7 @@ export default function FreeTipsPage() {
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <Link href="/free-tips" className="text-emerald-400">Free Tips</Link>
             <Link href="/buy-tips" className="hover:text-white transition-colors">Buy Tips</Link>
+            <Link href="/results" className="hover:text-white transition-colors">Results</Link>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login" className="text-sm font-medium text-zinc-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 hidden md:block">Sign In</Link>
@@ -68,10 +69,11 @@ export default function FreeTipsPage() {
           </div>
         </div>
         {mobileMenuOpen && (
-          <div className="md:hidden bg-black/90 border-t border-white/5 px-4 py-4 space-y-2 text-sm font-medium">
+          <div className="md:hidden absolute top-[100%] left-0 w-full bg-black/95 border-b border-white/5 px-4 py-4 space-y-2 text-sm font-medium shadow-2xl">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Home</Link>
             <Link href="/free-tips" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-emerald-400 hover:bg-white/5">Free Tips</Link>
             <Link href="/buy-tips" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Buy Tips</Link>
+            <Link href="/results" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Results</Link>
             <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Sign In</Link>
           </div>
         )}
