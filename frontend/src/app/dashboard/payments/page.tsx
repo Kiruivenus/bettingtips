@@ -12,7 +12,7 @@ interface Payment {
   amount: number;
   currency: string;
   paymentGateway: string;
-  status: 'pending' | 'completed' | 'failed';
+  status: 'pending' | 'completed' | 'declined';
   createdAt: string;
 }
 
@@ -106,9 +106,11 @@ export default function PaymentHistoryPage() {
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold
                         ${payment.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 
-                          payment.status === 'failed' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
+                          payment.status === 'declined' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
                           'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
-                        {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                        {payment.status === 'completed' ? 'Completed' : 
+                          payment.status === 'declined' ? 'Declined' : 
+                          'Pending'}
                       </span>
                     </td>
                   </tr>

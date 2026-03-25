@@ -19,6 +19,7 @@ router.post('/manual', protect, createManualPayment);
 router.put('/approve/:id', protect, admin, approveManualPayment);
 router.put('/reject/:id', protect, admin, rejectManualPayment);
 router.get('/my-payments', protect, getMyPayments);
+router.get('/history', protect, getMyPayments);
 router.get('/', protect, admin, getAllPayments);
 
 router.post('/stripe/create-session', protect, createStripeSession);

@@ -17,6 +17,7 @@ interface AuthContextType {
   loading: boolean;
   login: (userData: User) => void;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,22 +25,50 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   login: () => {},
   logout: () => {},
+  refreshUser: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const refreshUser = async () => {
     const storedUser = localStorage.getItem('btp_user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Invalid stored user data');
+    if (!storedUser) return;
+    
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${parsedUser.token}` }
+      });
+      
+      if (res.ok) {
+        const freshData = await res.json();
+        const updatedUser = { ...parsedUser, ...freshData };
+        setUser(updatedUser);
+        localStorage.setItem('btp_user', JSON.stringify(updatedUser));
       }
+    } catch (e) {
+      console.error('Failed to refresh user data', e);
     }
-    setLoading(false);
+  };
+
+  useEffect(() => {
+    const initAuth = async () => {
+      const storedUser = localStorage.getItem('btp_user');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          // Sync with backend on mount
+          await refreshUser();
+        } catch (e) {
+          console.error('Invalid stored user data');
+        }
+      }
+      setLoading(false);
+    };
+    initAuth();
   }, []);
 
   const login = (userData: User) => {
@@ -54,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

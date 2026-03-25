@@ -11,7 +11,7 @@ interface Payment {
   amount: number;
   currency: string;
   method: string;
-  status: 'pending' | 'approved' | 'failed' | 'rejected' | 'completed' | 'cancelled' | 'successful';
+  status: 'pending' | 'completed' | 'declined';
   transactionId: string;
   createdAt: string;
 }
@@ -141,8 +141,8 @@ export default function AdminPaymentsPage() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-2 w-max">
                         <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-bold uppercase
-                          ${p.status === 'approved' || p.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 
-                            p.status === 'failed' || p.status === 'rejected' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
+                          ${p.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 
+                            p.status === 'declined' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
                             'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
                           {p.status}
                         </span>

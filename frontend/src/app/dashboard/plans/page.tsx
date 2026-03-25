@@ -17,7 +17,7 @@ interface Plan {
 }
 
 export default function PlansPage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const router = useRouter();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +45,7 @@ export default function PlansPage() {
   const getMethodDetails = (method: string) => enabledMethods[method]?.details;
 
   useEffect(() => {
+    refreshUser();
     const fetchData = async () => {
       try {
         // Fetch plans and enabled payment methods in parallel
@@ -385,6 +386,7 @@ export default function PlansPage() {
                 if (!res.ok) throw new Error();
                 setManualStatus({ loading: false, error: '', success: 'Payment submitted! It will be reviewed and activated shortly.' });
                 setManualTxId('');
+                refreshUser();
               } catch {
                 setManualStatus({ loading: false, error: 'Failed to submit payment. Try again.', success: '' });
               }

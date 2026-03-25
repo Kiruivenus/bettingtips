@@ -17,7 +17,7 @@ interface Plan {
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,6 +27,7 @@ export default function DashboardPage() {
     : false;
 
   useEffect(() => {
+    refreshUser(); // Sync user state on dashboard entry
     const fetchPlans = async () => {
       try {
         const res = await fetch(`${API_URL}/api/plans`);

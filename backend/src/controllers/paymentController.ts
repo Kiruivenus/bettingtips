@@ -51,18 +51,19 @@ export const approveManualPayment = async (req: AuthRequest, res: Response) => {
     const payment = await Payment.findById(req.params.id).populate('plan');
     if (!payment) return res.status(404).json({ message: 'Payment not found' });
 
-    if (payment.status === 'approved') {
-      return res.status(400).json({ message: 'Payment already approved' });
+    if (payment.status === 'completed') {
+      return res.status(400).json({ message: 'Payment already completed' });
     }
 
     const plan: any = payment.plan;
 
-    payment.status = 'approved';
+    payment.status = 'completed';
     await payment.save();
 
     // Assign plan to user
     const user = await User.findById(payment.user);
     if (user && plan) {
+      console.log(`Assigning plan ${plan.name} to user ${user.email}`);
       user.activePlan = plan._id as any;
       
       const expiry = new Date();
@@ -71,10 +72,14 @@ export const approveManualPayment = async (req: AuthRequest, res: Response) => {
       user.subscriptionExpiry = expiry;
       
       await user.save();
+      console.log(`User ${user.email} updated successfully. Expiry: ${expiry.toISOString()}`);
+    } else {
+      console.warn(`Could not assign plan: User ${!!user}, Plan ${!!plan}`);
     }
 
     res.json(payment);
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error approving payment:', error);
     res.status(500).json({ message: 'Error approving payment' });
   }
 };
@@ -87,11 +92,11 @@ export const rejectManualPayment = async (req: AuthRequest, res: Response) => {
     const payment = await Payment.findById(req.params.id);
     if (!payment) return res.status(404).json({ message: 'Payment not found' });
 
-    if (payment.status === 'approved' || payment.status === 'rejected') {
+    if (payment.status === 'completed' || payment.status === 'declined') {
       return res.status(400).json({ message: `Payment already ${payment.status}` });
     }
 
-    payment.status = 'rejected';
+    payment.status = 'declined';
     await payment.save();
 
     res.json(payment);
@@ -184,7 +189,7 @@ export const stripeWebhook = async (req: Request, res: Response) => {
           amount: session.amount_total ? session.amount_total / 100 : plan.price,
           currency: session.currency?.toUpperCase() || plan.currency,
           method: 'stripe',
-          status: 'approved',
+          status: 'completed',
           transactionId: session.payment_intent as string,
         });
         await payment.save();
@@ -284,7 +289,7 @@ export const executePayPalPayment = async (req: AuthRequest, res: Response) => {
       if (error) {
         return res.status(500).json({ message: error.response?.message || 'PayPal execute error' });
       } else {
-        paymentRecord.status = 'approved';
+        paymentRecord.status = 'completed';
         await paymentRecord.save();
 
         const plan = await SubscriptionPlan.findById(planId);
@@ -414,7 +419,7 @@ export const mpesaCallback = async (req: Request, res: Response) => {
     if (!payment) return res.status(404).json({ message: 'Payment not found' });
 
     if (ResultCode === 0 && CallbackMetadata) {
-      payment.status = 'approved';
+      payment.status = 'completed';
       const receiptItem = CallbackMetadata.Item.find((item: any) => item.Name === 'MpesaReceiptNumber');
       if (receiptItem) {
         payment.transactionId = receiptItem.Value; 
@@ -431,7 +436,7 @@ export const mpesaCallback = async (req: Request, res: Response) => {
         await user.save();
       }
     } else {
-      payment.status = 'rejected';
+      payment.status = 'declined';
       await payment.save();
       console.log(`M-PESA payment failed: ${ResultDesc}`);
     }
