@@ -41,7 +41,8 @@ export default function GamesPage() {
   const isSubscriptionActive = user?.subscriptionExpiry
     ? new Date(user.subscriptionExpiry) > new Date()
     : false;
-  const hasAccess = isFree || (isSubscriptionActive && userActivePlan === planId);
+  const activeId = typeof userActivePlan === 'string' ? userActivePlan : userActivePlan?._id;
+  const hasAccess = isFree || (isSubscriptionActive && activeId === planId);
 
   useEffect(() => {
     const fetchData = async () => {

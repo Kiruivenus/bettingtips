@@ -45,7 +45,9 @@ export default function DashboardPage() {
   }, []);
 
   const isPlanOwned = (planId: string) => {
-    return isSubscriptionActive && userActivePlan === planId;
+    if (!isSubscriptionActive || !userActivePlan) return false;
+    const activeId = typeof userActivePlan === 'string' ? userActivePlan : userActivePlan._id;
+    return activeId === planId;
   };
 
   const colors = [

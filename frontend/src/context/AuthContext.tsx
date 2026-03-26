@@ -8,7 +8,7 @@ interface User {
   email: string;
   role: 'user' | 'admin';
   token?: string;
-  activePlan?: string;
+  activePlan?: string | any;
   subscriptionExpiry?: string;
 }
 

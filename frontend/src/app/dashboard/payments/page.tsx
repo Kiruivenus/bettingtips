@@ -11,7 +11,7 @@ interface Payment {
   plan: { name: string; durationInDays: number };
   amount: number;
   currency: string;
-  paymentGateway: string;
+  method: string;
   status: 'pending' | 'completed' | 'declined';
   createdAt: string;
 }
@@ -101,7 +101,13 @@ export default function PaymentHistoryPage() {
                     <td className="px-6 py-4 font-medium text-white">{payment.plan?.name || "Unknown Plan"}</td>
                     <td className="px-6 py-4 font-bold">{payment.currency} {payment.amount}</td>
                     <td className="px-6 py-4">
-                      <span className="capitalize text-zinc-400 bg-white/5 px-2.5 py-1 rounded-md text-xs">{payment.paymentGateway}</span>
+                      <span className="capitalize text-zinc-400 bg-white/5 px-2.5 py-1 rounded-md text-xs">
+                        {payment.method === 'mpesa_manual' ? 'M-Pesa (Manual)' : 
+                         payment.method === 'paypal_ff' ? 'PayPal F&F' : 
+                         payment.method === 'till' ? 'M-Pesa Till' :
+                         payment.method === 'airtel' ? 'Airtel Money' :
+                         payment.method?.replace('_', ' ')}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold

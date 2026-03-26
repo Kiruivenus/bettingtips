@@ -147,7 +147,11 @@ export default function AdminPaymentsPage() {
                           {p.status}
                         </span>
                         <span className="inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-white/5 text-zinc-400 border border-white/10">
-                          {p.method}
+                          {p.method === 'mpesa_manual' ? 'M-Pesa (Manual)' : 
+                           p.method === 'paypal_ff' ? 'PayPal F&F' : 
+                           p.method === 'till' ? 'M-Pesa Till' :
+                           p.method === 'airtel' ? 'Airtel Money' :
+                           p.method?.replace('_', ' ')}
                         </span>
                       </div>
                     </td>

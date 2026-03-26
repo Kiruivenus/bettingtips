@@ -29,7 +29,7 @@ export const createManualPayment = async (req: AuthRequest, res: Response) => {
     const payment = new Payment({
       user: req.user?._id,
       plan: plan._id,
-      amount,
+      amount: plan.price, // Use price from DB for integrity
       currency: plan.currency,
       method,
       status: 'pending',
