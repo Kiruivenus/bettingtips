@@ -5,16 +5,19 @@ import SubscriptionPlan from '../models/SubscriptionPlan';
 import User from '../models/User';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import paypal from 'paypal-rest-sdk';
+import PaymentSettings from '../models/PaymentSettings';
 
-paypal.configure({
-  mode: process.env.PAYPAL_MODE || 'sandbox', // sandbox or live
-  client_id: process.env.PAYPAL_CLIENT_ID || '',
-  client_secret: process.env.PAYPAL_CLIENT_SECRET || ''
-});
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: '2025-02-24.acacia' as any,
-});
+// Helper to get latest settings for a gateway
+const getGatewaySettings = async (method: string) => {
+  const settingsDoc = await PaymentSettings.findOne({ method });
+  if (!settingsDoc || !settingsDoc.isEnabled) return null;
+  
+  const settings: Record<string, string> = {};
+  if (settingsDoc.settings instanceof Map) {
+    settingsDoc.settings.forEach((v, k) => { settings[k] = v; });
+  }
+  return settings;
+};
 
 // @desc    Create a manual payment (M-PESA, Bank Transfer)
 // @route   POST /api/payments/manual
@@ -134,11 +137,18 @@ export const getAllPayments = async (req: AuthRequest, res: Response) => {
 // @access  Private
 export const createStripeSession = async (req: AuthRequest, res: Response) => {
   try {
-    const { planId } = req.body;
+    const { planId, paymentId } = req.body;
+    const payment = await Payment.findById(paymentId);
+    if (!payment) return res.status(404).json({ message: 'Payment not found' });
+
     const plan = await SubscriptionPlan.findById(planId);
     if (!plan) return res.status(404).json({ message: 'Plan not found' });
 
-    const session = await stripe.checkout.sessions.create({
+    const settings = await getGatewaySettings('stripe');
+    if (!settings?.secretKey) return res.status(500).json({ message: 'Stripe is not configured' });
+    
+    const stripeInstance = new Stripe(settings.secretKey, { apiVersion: '2025-02-24.acacia' as any });
+    const session = await stripeInstance.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
@@ -169,8 +179,16 @@ export const createStripeSession = async (req: AuthRequest, res: Response) => {
 export const stripeWebhook = async (req: Request, res: Response) => {
   const sig = req.headers['stripe-signature'] as string;
   let event;
+
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET as string);
+    const settings = await getGatewaySettings('stripe');
+    const webhookSecret = settings?.webhookSecret || process.env.STRIPE_WEBHOOK_SECRET;
+    const secretKey = settings?.secretKey || process.env.STRIPE_SECRET_KEY;
+    
+    if (!secretKey) throw new Error('Stripe secret key not found');
+    const stripeInstance = new Stripe(secretKey, { apiVersion: '2025-02-24.acacia' as any });
+
+    event = stripeInstance.webhooks.constructEvent(req.body, sig, webhookSecret as string);
   } catch (err: any) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
@@ -217,6 +235,15 @@ export const createPayPalPayment = async (req: AuthRequest, res: Response) => {
     const { planId } = req.body;
     const plan = await SubscriptionPlan.findById(planId);
     if (!plan) return res.status(404).json({ message: 'Plan not found' });
+
+    const settings = await getGatewaySettings('paypal');
+    if (!settings?.clientId || !settings?.clientSecret) return res.status(500).json({ message: 'PayPal is not configured' });
+
+    paypal.configure({
+      mode: (settings.mode as any) || 'sandbox',
+      client_id: settings.clientId,
+      client_secret: settings.clientSecret
+    });
 
     const create_payment_json = {
       intent: 'sale',
@@ -278,6 +305,15 @@ export const executePayPalPayment = async (req: AuthRequest, res: Response) => {
     const paymentRecord = await Payment.findOne({ transactionId: paymentId });
     if (!paymentRecord) return res.status(404).json({ message: 'Payment record not found' });
 
+    const settings = await getGatewaySettings('paypal');
+    if (settings) {
+      paypal.configure({
+        mode: (settings.mode as any) || 'sandbox',
+        client_id: settings.clientId,
+        client_secret: settings.clientSecret
+      });
+    }
+
     const execute_payment_json = {
       payer_id: PayerID,
       transactions: [
@@ -312,14 +348,17 @@ export const executePayPalPayment = async (req: AuthRequest, res: Response) => {
 };
 
 // @desc    Generate M-PESA Token
-const generateMpesaToken = async (): Promise<string | null> => {
+const generateMpesaToken = async (settings: Record<string, string>): Promise<string | null> => {
   try {
-    const consumerKey = process.env.MPESA_CONSUMER_KEY as string;
-    const consumerSecret = process.env.MPESA_CONSUMER_SECRET as string;
+    const consumerKey = settings.consumerKey;
+    const consumerSecret = settings.consumerSecret;
+    const environment = settings.environment || 'sandbox';
+    const baseUrl = environment === 'live' ? 'https://api.safaricom.co.ke' : 'https://sandbox.safaricom.co.ke';
+
     const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
 
     const response = await fetch(
-      'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+      `${baseUrl}/oauth/v1/generate?grant_type=client_credentials`,
       {
         headers: { Authorization: `Basic ${auth}` },
       }
@@ -349,11 +388,17 @@ export const createMpesaPayment = async (req: AuthRequest, res: Response) => {
     const plan = await SubscriptionPlan.findById(planId);
     if (!plan) return res.status(404).json({ message: 'Plan not found' });
 
-    const token = await generateMpesaToken();
-    if (!token) return res.status(500).json({ message: 'Failed to generate M-PESA token' });
+    const settings = await getGatewaySettings('mpesa');
+    if (!settings?.consumerKey || !settings?.consumerSecret) return res.status(500).json({ message: 'M-PESA is not configured' });
 
-    const shortcode = process.env.MPESA_SHORTCODE as string;
-    const passkey = process.env.MPESA_PASSKEY as string;
+    const token = await generateMpesaToken(settings);
+    if (!token) return res.status(500).json({ message: 'Failed to generate M-PESA token (check your credentials)' });
+
+    const shortcode = settings.shortcode;
+    const passkey = settings.passkey;
+    const environment = settings.environment || 'sandbox';
+    const baseUrl = environment === 'live' ? 'https://api.safaricom.co.ke' : 'https://sandbox.safaricom.co.ke';
+
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3);
     const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString('base64');
     
@@ -373,7 +418,7 @@ export const createMpesaPayment = async (req: AuthRequest, res: Response) => {
       TransactionDesc: `Subscription to ${plan.name}`,
     };
 
-    const response = await fetch('https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', {
+    const response = await fetch(`${baseUrl}/mpesa/stkpush/v1/processrequest`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,

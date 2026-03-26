@@ -46,6 +46,7 @@ const METHODS: MethodConfig[] = [
       { key: 'publishableKey', label: 'Publishable Key', type: 'text', placeholder: 'pk_live_...', hint: 'Your public Stripe key (starts with pk_live_ or pk_test_)' },
       { key: 'secretKey', label: 'Secret Key', type: 'password', placeholder: 'sk_live_...', hint: 'Your secret Stripe key. Never share this publicly.' },
       { key: 'webhookSecret', label: 'Webhook Signing Secret', type: 'password', placeholder: 'whsec_...', hint: 'Found in Stripe Dashboard → Webhooks.' },
+      { key: 'environment', label: 'Environment', type: 'select', options: ['sandbox', 'live'], hint: 'Switch between Test (Sandbox) and Production (Live) modes.' },
     ],
   },
   {
@@ -71,6 +72,7 @@ const METHODS: MethodConfig[] = [
       { key: 'consumerSecret', label: 'Consumer Secret', type: 'password', placeholder: 'xxxx...' },
       { key: 'passkey', label: 'Lipa Na M-Pesa Passkey', type: 'password', placeholder: 'bfb279...' },
       { key: 'shortcode', label: 'Shortcode / Paybill', type: 'text', placeholder: '174379', hint: 'Use 174379 for sandbox.' },
+      { key: 'environment', label: 'Environment', type: 'select', options: ['sandbox', 'live'], hint: 'Important: Sandbox uses sandbox.safaricom.co.ke, Live uses api.safaricom.co.ke' },
     ],
   },
   {
