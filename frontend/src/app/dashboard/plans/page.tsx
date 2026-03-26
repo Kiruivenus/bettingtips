@@ -155,10 +155,27 @@ export default function PlansPage() {
     setShowMpesaModal(true);
   };
 
+  const getExchangeRate = () => {
+    return parseFloat(enabledMethods['mpesa']?.details?.exchangeRate || '1');
+  };
+
+  const calculateConvertedAmount = (usdAmount: number) => {
+    const rate = getExchangeRate();
+    return Math.round(usdAmount * rate);
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     // Silent copy is fine, but we could add a temporary state for feedback if needed
   };
+
+  const formatPhoneNumber = (phone: string) => {
+    if (phone.startsWith('+')) phone = phone.substring(1);
+    return phone;
+  };
+
+  const mpesaPlan = plans.find(p => p._id === selectedPlanForMpesa);
+  const mpesaAmountKes = mpesaPlan ? calculateConvertedAmount(mpesaPlan.price) : 0;
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 relative overflow-x-hidden">
@@ -314,7 +331,15 @@ export default function PlansPage() {
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowMpesaModal(false)} />
           <div className="relative bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-200">
             <h3 className="text-xl font-bold text-white mb-2">M-PESA Payment</h3>
-            <p className="text-sm text-zinc-400 mb-6">Enter your phone number to receive an STK Push prompt.</p>
+            <p className="text-sm text-zinc-400 mb-6">Enter your M-PESA phone number to receive a payment prompt.</p>
+
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-6 flex items-center justify-between">
+              <span className="text-zinc-400 text-sm font-medium">Total Amount:</span>
+              <div className="text-right">
+                <div className="text-white font-extrabold text-lg">KES {mpesaAmountKes.toLocaleString()}</div>
+                <div className="text-zinc-500 text-[10px] uppercase tracking-tighter">Converted from {mpesaPlan?.currency} {mpesaPlan?.price}</div>
+              </div>
+            </div>
             
             {mpesaStatus.error && <p className="text-red-400 text-sm mb-4 bg-red-400/10 p-2 rounded-lg">{mpesaStatus.error}</p>}
             {mpesaStatus.success && <p className="text-emerald-400 text-sm mb-4 bg-emerald-400/10 p-2 rounded-lg">{mpesaStatus.success}</p>}
@@ -358,6 +383,12 @@ export default function PlansPage() {
               const details = getMethodDetails(selectedManualMethod);
               if (!details) return <p className="text-zinc-500 text-sm mb-4">Payment details not configured. Contact support.</p>;
               
+              const plan = plans.find(p => p._id === selectedPlanForManual);
+              const isMpesaRelated = ['till', 'mpesa_manual', 'airtel'].includes(selectedManualMethod);
+              const displayAmount = isMpesaRelated && plan 
+                ? `KES ${calculateConvertedAmount(plan.price).toLocaleString()}` 
+                : `${plan?.currency} ${plan?.price}`;
+
               const DetailRow = ({ label, value, isMono = false }: { label: string, value: string, isMono?: boolean }) => (
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-zinc-500">{label}:</span>
@@ -376,6 +407,10 @@ export default function PlansPage() {
 
               return (
                 <div className="bg-black/40 border border-white/10 rounded-xl p-4 mb-5 space-y-3">
+                  <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2 mb-2">
+                    <span className="text-zinc-500 font-bold">Amount to Pay:</span>
+                    <span className="text-amber-400 font-extrabold text-base">{displayAmount}</span>
+                  </div>
                   {details.email && <DetailRow label="Email" value={details.email} isMono />}
                   {details.username && <DetailRow label="Username" value={details.username} isMono />}
                   {details.walletAddress && (

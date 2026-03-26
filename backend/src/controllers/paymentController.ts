@@ -394,15 +394,22 @@ export const createMpesaPayment = async (req: AuthRequest, res: Response) => {
     const token = await generateMpesaToken(settings);
     if (!token) return res.status(500).json({ message: 'Failed to generate M-PESA token (check your credentials)' });
 
-    const shortcode = settings.shortcode;
     const passkey = settings.passkey;
     const environment = settings.environment || 'sandbox';
+    const exchangeRate = parseFloat(settings.exchangeRate || '1');
     const baseUrl = environment === 'live' ? 'https://api.safaricom.co.ke' : 'https://sandbox.safaricom.co.ke';
 
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3);
     const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString('base64');
     
-    const amount = plan.price;
+    // Convert USD to KES if plan is in USD
+    let amount = plan.price;
+    let currency = plan.currency;
+    
+    if (currency === 'USD') {
+      amount = Math.round(plan.price * exchangeRate);
+      currency = 'KES';
+    }
 
     const requestBody = {
       BusinessShortCode: shortcode,
@@ -434,7 +441,7 @@ export const createMpesaPayment = async (req: AuthRequest, res: Response) => {
         user: req.user?._id,
         plan: plan._id,
         amount,
-        currency: 'KES',
+        currency,
         method: 'mpesa',
         status: 'pending',
         transactionId: data.CheckoutRequestID,
