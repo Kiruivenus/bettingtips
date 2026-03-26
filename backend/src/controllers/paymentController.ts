@@ -396,7 +396,7 @@ export const createMpesaPayment = async (req: AuthRequest, res: Response) => {
 
     const passkey = settings.passkey;
     const environment = settings.environment || 'sandbox';
-    const exchangeRate = parseFloat(settings.exchangeRate || '1');
+    const exchangeRate = parseFloat(settings.exchangeRate || '125');
     const baseUrl = environment === 'live' ? 'https://api.safaricom.co.ke' : 'https://sandbox.safaricom.co.ke';
 
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3);

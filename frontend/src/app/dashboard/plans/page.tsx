@@ -156,7 +156,7 @@ export default function PlansPage() {
   };
 
   const getExchangeRate = () => {
-    return parseFloat(enabledMethods['mpesa']?.details?.exchangeRate || '1');
+    return parseFloat(enabledMethods['mpesa']?.details?.exchangeRate || '125');
   };
 
   const calculateConvertedAmount = (usdAmount: number) => {

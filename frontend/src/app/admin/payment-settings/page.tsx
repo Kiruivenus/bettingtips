@@ -73,7 +73,7 @@ const METHODS: MethodConfig[] = [
       { key: 'passkey', label: 'Lipa Na M-Pesa Passkey', type: 'password', placeholder: 'bfb279...' },
       { key: 'shortcode', label: 'Shortcode / Paybill', type: 'text', placeholder: '174379', hint: 'Use 174379 for sandbox.' },
       { key: 'environment', label: 'Environment', type: 'select', options: ['sandbox', 'live'], hint: 'Important: Sandbox uses sandbox.safaricom.co.ke, Live uses api.safaricom.co.ke' },
-      { key: 'exchangeRate', label: 'Exchange Rate (1 USD to KES)', type: 'text', placeholder: 'e.g. 130', hint: 'This rate will be used to convert Plan prices from USD to KES for all M-Pesa methods.' },
+      { key: 'exchangeRate', label: 'Exchange Rate (1 USD to KES)', type: 'text', placeholder: 'e.g. 125', hint: 'This rate will be used to convert Plan prices from USD to KES for all M-Pesa methods.' },
     ],
   },
   {
