@@ -8,6 +8,8 @@ export interface IUser extends Document {
   activePlan?: mongoose.Types.ObjectId;
   subscriptionExpiry?: Date;
   isBlocked: boolean;
+  resetPasswordToken?: string;
+  resetPasswordExpire?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +23,8 @@ const UserSchema: Schema = new Schema(
     activePlan: { type: Schema.Types.ObjectId, ref: 'SubscriptionPlan' },
     subscriptionExpiry: { type: Date },
     isBlocked: { type: Boolean, default: false },
+    resetPasswordToken: { type: String },
+    resetPasswordExpire: { type: Date },
   },
   { timestamps: true }
 );
