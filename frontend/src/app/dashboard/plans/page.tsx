@@ -428,7 +428,18 @@ export default function PlansPage() {
                   {details.bankName && <DetailRow label="Bank" value={details.bankName} />}
                   {details.accountName && <DetailRow label="Account Name" value={details.accountName} />}
                   {details.accountNumber && <DetailRow label="Account No" value={details.accountNumber} isMono />}
-                  {details.mpesaNumber && <DetailRow label="M-Pesa" value={details.mpesaNumber} isMono />}
+                  {details.mpesaNumber && <DetailRow label="M-Pesa Number" value={details.mpesaNumber} isMono />}
+                  {details.phoneNumber && (
+                    <DetailRow 
+                      label={
+                        selectedManualMethod === 'airtel' ? 'Airtel Number' : 
+                        selectedManualMethod === 'mpesa_manual' ? 'M-Pesa Number' : 
+                        'Phone Number'
+                      } 
+                      value={details.phoneNumber} 
+                      isMono 
+                    />
+                  )}
                   {details.tillNumber && <DetailRow label="Till Number" value={details.tillNumber} isMono />}
                   {details.tillName && <DetailRow label="Till Name" value={details.tillName} />}
                   {details.instructions && <div className="mt-3 pt-3 border-t border-white/10"><p className="text-zinc-400 text-xs italic">{details.instructions}</p></div>}
