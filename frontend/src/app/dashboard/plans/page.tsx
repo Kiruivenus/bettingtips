@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/constants';
@@ -16,7 +16,7 @@ interface Plan {
   features: string[];
 }
 
-export default function PlansPage() {
+function PlansPageContent() {
   const { user, refreshUser } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -506,5 +506,17 @@ export default function PlansPage() {
       )}
       </div>
     </div>
+  );
+}
+
+export default function PlansPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+        <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin shadow-[0_0_20px_rgba(16,185,129,0.2)]" />
+      </div>
+    }>
+      <PlansPageContent />
+    </Suspense>
   );
 }
