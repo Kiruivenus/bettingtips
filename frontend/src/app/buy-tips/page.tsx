@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { API_URL } from '@/lib/constants';
+import { useAuth } from '@/context/AuthContext';
 
 interface Plan {
   _id: string;
@@ -17,6 +18,7 @@ interface Plan {
 }
 
 export default function BuyTipsPage() {
+  const { user } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -155,8 +157,11 @@ export default function BuyTipsPage() {
 
                     {/* Payment Buttons */}
                     <div className="space-y-3 mt-auto">
-                      <Link href="/login" className={`w-full flex items-center justify-center h-12 rounded-xl font-bold text-sm text-white transition-all ${c.btn}`}>
-                        Subscribe Now
+                      <Link
+                        href={user ? `/dashboard/plans?planId=${plan._id}` : `/login?redirect=/dashboard/plans?planId=${plan._id}`}
+                        className={`w-full flex items-center justify-center h-12 rounded-xl font-bold text-sm text-white transition-all ${c.btn}`}
+                      >
+                        Choose Plan
                       </Link>
                       <p className="text-center text-[10px] text-zinc-600">Secure payment · Instant access after payment</p>
                     </div>

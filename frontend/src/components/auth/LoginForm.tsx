@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/constants';
 import { Input } from '@/components/ui/Input';
@@ -16,7 +16,10 @@ export const LoginForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
+  
+  const redirect = searchParams.get('redirect');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +40,11 @@ export const LoginForm: React.FC = () => {
       }
 
       login({ ...data, token: data.token });
+      
       if (data.role === 'admin') {
-        router.push('/admin');
+        router.push(redirect || '/admin');
       } else {
-        router.push('/dashboard');
+        router.push(redirect || '/dashboard');
       }
     } catch (err: any) {
       setError(err.message);

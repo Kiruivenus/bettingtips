@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/Button';
@@ -19,6 +19,8 @@ interface Plan {
 export default function PlansPage() {
   const { user, refreshUser } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const planIdParam = searchParams.get('planId');
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -176,12 +178,29 @@ export default function PlansPage() {
 
   const mpesaPlan = plans.find(p => p._id === selectedPlanForMpesa);
   const mpesaAmountKes = mpesaPlan ? calculateConvertedAmount(mpesaPlan.price) : 0;
+  
+  const filteredPlans = planIdParam ? plans.filter(p => p._id === planIdParam) : plans;
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 relative overflow-x-hidden">
       <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 text-center max-w-none">
-        <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Elite Betting Plans</h1>
-        <p className="text-zinc-400 text-sm max-w-2xl mx-auto">Choose the perfect plan to elevate your betting strategy with our expert predictions and analysis.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-white mb-2">
+          {planIdParam ? 'Complete Your Subscription' : 'Elite Betting Plans'}
+        </h1>
+        <p className="text-zinc-400 text-sm max-w-2xl mx-auto">
+          {planIdParam 
+            ? 'Selected plan details and secure payment options.' 
+            : 'Choose the perfect plan to elevate your betting strategy with our expert predictions and analysis.'}
+        </p>
+        {planIdParam && (
+          <button 
+            onClick={() => router.push('/dashboard/plans')}
+            className="mt-4 text-emerald-400 hover:text-emerald-300 group inline-flex items-center gap-2 text-sm font-bold"
+          >
+            <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+            View All Plans
+          </button>
+        )}
       </header>
 
       <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-8">
@@ -193,7 +212,7 @@ export default function PlansPage() {
         </div>
       ) : (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto items-center">
-          {plans.map((plan, index) => {
+          {filteredPlans.map((plan, index) => {
             const isPopular = index === 1 || plan.name.toLowerCase().includes('pro');
             
             return (
