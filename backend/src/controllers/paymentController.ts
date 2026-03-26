@@ -137,10 +137,7 @@ export const getAllPayments = async (req: AuthRequest, res: Response) => {
 // @access  Private
 export const createStripeSession = async (req: AuthRequest, res: Response) => {
   try {
-    const { planId, paymentId } = req.body;
-    const payment = await Payment.findById(paymentId);
-    if (!payment) return res.status(404).json({ message: 'Payment not found' });
-
+    const { planId } = req.body;
     const plan = await SubscriptionPlan.findById(planId);
     if (!plan) return res.status(404).json({ message: 'Plan not found' });
 
