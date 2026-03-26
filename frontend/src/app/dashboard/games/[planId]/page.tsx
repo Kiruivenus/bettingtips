@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/constants';
+import { MatchResults } from '@/components/MatchResults';
 
 interface Tip {
   _id: string;
@@ -15,6 +16,7 @@ interface Tip {
   status: 'pending' | 'won' | 'lost';
   isPremium: boolean;
   matchDate: string;
+  result?: string;
   planId?: { _id: string; name: string } | string;
 }
 
@@ -132,40 +134,16 @@ export default function GamesPage() {
 
       <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-12">
         {loading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-52 bg-white/5 animate-pulse rounded-2xl" />)}
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-16 bg-white/5 animate-pulse rounded-2xl" />)}
           </div>
         ) : (
           <>
             {/* Active / Pending Tips */}
             <section>
-              <h2 className="text-lg font-bold text-white mb-4">Today's Picks</h2>
+              <h2 className="text-lg font-bold text-white mb-6">Today's Picks</h2>
               {pendingTips.length > 0 ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {pendingTips.map(tip => (
-                    <div key={tip._id} className={`bg-zinc-900/80 border rounded-2xl p-5 transition-all duration-300 hover:border-emerald-500/30 hover:-translate-y-1 ${isFree ? 'border-white/10' : 'border-amber-500/20'}`}>
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 px-2 py-1 rounded-lg">{tip.league}</span>
-                        <span className="text-[10px] text-zinc-500 font-medium">
-                          {new Date(tip.matchDate).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
-                        </span>
-                      </div>
-                      <h3 className="text-sm font-bold text-white mb-4 leading-tight">{tip.match}</h3>
-                      <div className="bg-black/40 rounded-xl p-3 border border-white/5 flex justify-between items-center">
-                        <div>
-                          <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Prediction</p>
-                          <p className={`text-sm font-bold ${isFree ? 'text-emerald-400' : 'text-amber-400'}`}>{tip.prediction}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Odds</p>
-                          <div className="bg-white/10 px-3 py-1 rounded-lg">
-                            <span className="text-sm font-extrabold text-white">{tip.odds.toFixed(2)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <MatchResults tips={pendingTips} showPlanBadge={false} />
               ) : (
                 <div className="text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
                   <p className="text-zinc-400">No active predictions right now. Check back soon!</p>
@@ -176,37 +154,8 @@ export default function GamesPage() {
             {/* Past Results */}
             {pastTips.length > 0 && (
               <section>
-                <h2 className="text-lg font-bold text-white mb-4">Past Results</h2>
-                <div className="overflow-x-auto bg-black/20 border border-white/5 rounded-2xl">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-white/10">
-                        <th className="py-3 px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Date</th>
-                        <th className="py-3 px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Match</th>
-                        <th className="py-3 px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Prediction</th>
-                        <th className="py-3 px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Odds</th>
-                        <th className="py-3 px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider text-center">Result</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pastTips.map(tip => (
-                        <tr key={tip._id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                          <td className="py-3 px-4 text-xs text-zinc-400 whitespace-nowrap">{new Date(tip.matchDate).toLocaleDateString([], { month: 'short', day: 'numeric' })}</td>
-                          <td className="py-3 px-4 text-sm font-semibold text-white">{tip.match}</td>
-                          <td className="py-3 px-4 text-sm text-zinc-300">{tip.prediction}</td>
-                          <td className="py-3 px-4 text-sm font-bold text-white">{tip.odds.toFixed(2)}</td>
-                          <td className="py-3 px-4 text-center">
-                            <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg ${
-                              tip.status === 'won' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                            }`}>
-                              {tip.status === 'won' ? '✓ Win' : '✗ Loss'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <h2 className="text-lg font-bold text-white mb-6">Past Results</h2>
+                <MatchResults tips={pastTips} showPlanBadge={false} />
               </section>
             )}
           </>

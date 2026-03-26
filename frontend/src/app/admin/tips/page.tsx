@@ -18,6 +18,7 @@ interface Tip {
     _id: string;
     name: string;
   };
+  result?: string;
 }
 
 interface Plan {
@@ -44,7 +45,8 @@ export default function AdminTipsPage() {
     matchDate: '',
     status: 'pending',
     isPremium: false,
-    planId: ''
+    planId: '',
+    result: ''
   });
   
   const [toast, setToast] = useState<{message: string, type: 'success'|'error'} | null>(null);
@@ -99,14 +101,16 @@ export default function AdminTipsPage() {
         matchDate: new Date(tip.matchDate).toISOString().slice(0, 16),
         status: tip.status,
         isPremium: tip.isPremium,
-        planId: typeof tip.planId === 'object' ? tip.planId?._id || '' : (tip.planId || '')
+        planId: typeof tip.planId === 'object' ? tip.planId?._id || '' : (tip.planId || ''),
+        result: tip.result || ''
       });
     } else {
       setCurrentTip(null);
       setFormData({
         match: '', league: '', odds: '', prediction: '',
         confidence: '80', matchDate: new Date().toISOString().slice(0, 16),
-        status: 'pending', isPremium: false, planId: ''
+        status: 'pending', isPremium: false, planId: '',
+        result: ''
       });
     }
     setIsModalOpen(true);
@@ -217,69 +221,90 @@ export default function AdminTipsPage() {
             Create First Tip
           </button>
         </div>
-      ) : (
-        <div className="bg-black/20 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-white/5 text-zinc-400 border-b border-white/10 text-xs uppercase tracking-wider">
-                <tr>
-                  <th className="px-6 py-4 font-medium">Match Details</th>
-                  <th className="px-6 py-4 font-medium">Prediction</th>
-                  <th className="px-6 py-4 font-medium">Stats</th>
-                  <th className="px-6 py-4 font-medium">Status / Tier</th>
-                  <th className="px-6 py-4 font-medium text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 text-zinc-300">
-                {tips.map(tip => (
-                  <tr key={tip._id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-white mb-1">{tip.match}</div>
-                      <div className="text-xs text-zinc-500 flex items-center gap-2">
-                        <span>{tip.league}</span>
-                        <span className="w-1 h-1 rounded-full bg-zinc-600"></span>
-                        <span>{new Date(tip.matchDate).toLocaleDateString()} {new Date(tip.matchDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-amber-400">{tip.prediction}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs font-bold text-white bg-white/10 px-2 py-0.5 rounded w-max">Odds: {tip.odds}</span>
-                        <span className="text-xs text-zinc-400">{tip.confidence}% Confidence</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-2 w-max">
-                        <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-bold uppercase
-                          ${tip.status === 'won' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 
-                            tip.status === 'lost' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
-                            'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
-                          {tip.status}
-                        </span>
-                        <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-bold uppercase ${tip.isPremium ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
-                          {tip.isPremium ? `${tip.planId?.name || 'VIP'} Premium` : 'Free Tip'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => handleOpenModal(tip)} className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors" title="Edit Tip">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        </button>
-                        <button onClick={() => { setCurrentTip(tip); setIsDeleteModalOpen(true); }} className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors" title="Delete Tip">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      ) : (() => {
+        const groupedTips = tips.reduce((groups: Record<string, Tip[]>, tip) => {
+          const date = new Date(tip.matchDate).toLocaleDateString();
+          if (!groups[date]) groups[date] = [];
+          groups[date].push(tip);
+          return groups;
+        }, {});
+        
+        const sortedDates = Object.keys(groupedTips).sort((a, b) => 
+          new Date(groupedTips[b][0].matchDate).getTime() - new Date(groupedTips[a][0].matchDate).getTime()
+        );
+
+        return (
+          <div className="space-y-8 pb-20">
+            {sortedDates.map(date => (
+              <div key={date} className="bg-black/20 border border-white/10 rounded-2xl overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div className="bg-white/5 px-6 py-3 border-b border-white/10 flex items-center justify-between">
+                  <h3 className="text-sm font-black text-white flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    {date}
+                  </h3>
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{groupedTips[date].length} Tips</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm whitespace-nowrap">
+                    <thead className="bg-white/[0.02] text-zinc-400 border-b border-white/5 text-[10px] uppercase tracking-wider">
+                      <tr>
+                        <th className="px-6 py-3 font-bold">Match Details</th>
+                        <th className="px-6 py-3 font-bold">Prediction</th>
+                        <th className="px-6 py-3 font-bold">Result</th>
+                        <th className="px-6 py-3 font-bold text-center">Stats / Tier</th>
+                        <th className="px-6 py-3 font-bold text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 text-zinc-300">
+                      {groupedTips[date].map(tip => (
+                        <tr key={tip._id} className="hover:bg-white/[0.02] transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="font-bold text-white mb-0.5">{tip.match}</div>
+                            <div className="text-[10px] text-zinc-500 font-medium">
+                              {tip.league} • {new Date(tip.matchDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="font-bold text-amber-400 text-xs">{tip.prediction}</div>
+                            <div className="text-[10px] text-zinc-500 font-bold">@{tip.odds.toFixed(2)}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider
+                              ${tip.status === 'won' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 
+                                tip.status === 'lost' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
+                                'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+                              {tip.status === 'won' ? '✓ ' : tip.status === 'lost' ? '✗ ' : '⏱ '}
+                              {tip.result || tip.status}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col items-center gap-1">
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter ${tip.isPremium ? 'bg-purple-500/20 text-purple-400 border border-purple-500/10' : 'bg-blue-500/20 text-blue-400 border border-blue-500/10'}`}>
+                                {tip.isPremium ? `${tip.planId?.name || 'VIP'} Premium` : 'Public Free'}
+                              </span>
+                              <div className="text-[9px] text-zinc-600 font-black">{tip.confidence}% Match Confidence</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button onClick={() => handleOpenModal(tip)} className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-all" title="Edit Tip">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                              </button>
+                              <button onClick={() => { setCurrentTip(tip); setIsDeleteModalOpen(true); }} className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all" title="Delete Tip">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
@@ -323,6 +348,12 @@ export default function AdminTipsPage() {
                   <label className="block text-xs font-medium text-zinc-400 mb-1">Confidence (%)</label>
                   <input required type="number" min="1" max="100" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50" 
                     value={formData.confidence} onChange={e => setFormData({...formData, confidence: e.target.value})} placeholder="80" />
+                </div>
+
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-xs font-medium text-zinc-400 mb-1">Result (e.g. 2-1, 3 Cards)</label>
+                  <input type="text" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50" 
+                    value={formData.result} onChange={e => setFormData({...formData, result: e.target.value})} placeholder="Final Score" />
                 </div>
 
                 <div className="col-span-2 md:col-span-1">

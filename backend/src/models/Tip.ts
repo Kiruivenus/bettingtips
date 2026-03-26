@@ -10,6 +10,7 @@ export interface ITip extends Document {
   status: 'pending' | 'won' | 'lost';
   isPremium: boolean;
   planId?: mongoose.Types.ObjectId;
+  result?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,6 +26,7 @@ const TipSchema: Schema = new Schema(
     status: { type: String, enum: ['pending', 'won', 'lost'], default: 'pending' },
     isPremium: { type: Boolean, default: false },
     planId: { type: Schema.Types.ObjectId, ref: 'SubscriptionPlan' },
+    result: { type: String, default: '' },
   },
   { timestamps: true }
 );
