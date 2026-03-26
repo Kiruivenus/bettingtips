@@ -26,8 +26,8 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         <div className="h-full flex items-center justify-between max-w-7xl mx-auto">
           {/* Logo & Brand */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <Image src="/logo.png" alt="BettingPro" width={32} height={32} className="rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.2)] group-hover:scale-105 transition-transform" />
-            <span className="text-xl font-black text-white tracking-tighter italic lg:not-italic lg:font-extrabold">BettingPro</span>
+            <Image src="/logo.png" alt="Platinum Picks" width={32} height={32} className="rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.2)] group-hover:scale-105 transition-transform" />
+            <span className="text-xl font-black text-white tracking-tighter italic lg:not-italic lg:font-extrabold">Platinum Picks</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -97,7 +97,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
 
           {/* Footer info */}
           <div className="relative z-10 text-xs text-zinc-600 font-medium tracking-wide">
-            © 2026 BettingPro. Secure & Verified Platform.
+            © 2026 Platinum Picks. Secure & Verified Platform.
           </div>
         </div>
 

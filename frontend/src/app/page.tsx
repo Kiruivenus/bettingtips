@@ -98,8 +98,8 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 w-full z-[100] border-b border-white/5 bg-black/60 backdrop-blur-xl transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.png" alt="BettingPro" width={36} height={36} className="rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
-            <span className="text-xl font-extrabold text-white">BettingPro</span>
+            <Image src="/logo.png" alt="Platinum Picks" width={36} height={36} className="rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
+            <span className="text-xl font-extrabold text-white">Platinum Picks</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
@@ -521,8 +521,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-3 mb-4">
-                <Image src="/logo.png" alt="BettingPro" width={36} height={36} className="rounded-xl" />
-                <span className="text-xl font-extrabold text-white">BettingPro</span>
+                <Image src="/logo.png" alt="Platinum Picks" width={36} height={36} className="rounded-xl" />
+                <span className="text-xl font-extrabold text-white">Platinum Picks</span>
               </div>
               <p className="text-zinc-500 text-sm leading-relaxed mb-4">Expert football betting tips and predictions. Verified tipsters with transparent results.</p>
               <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
@@ -577,7 +577,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-zinc-600 text-sm">© 2015–2026 BettingPro. All Rights Reserved.</p>
+            <p className="text-zinc-600 text-sm">© 2015–2026 Platinum Picks. All Rights Reserved.</p>
             <p className="text-zinc-600 text-xs text-center md:text-right max-w-md">
               Betting involves financial risk. Tips are for informational purposes only. Please bet responsibly and within your means. This service is for users 18+.
             </p>

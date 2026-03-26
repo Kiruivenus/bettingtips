@@ -50,8 +50,8 @@ export default function SupportPage() {
       <nav className="fixed top-0 left-0 right-0 w-full z-[100] border-b border-white/5 bg-black/60 backdrop-blur-xl transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.png" alt="BettingPro" width={36} height={36} className="rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
-            <span className="text-xl font-extrabold text-white">BettingPro</span>
+            <Image src="/logo.png" alt="Platinum Picks" width={36} height={36} className="rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
+            <span className="text-xl font-extrabold text-white">Platinum Picks</span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
@@ -200,11 +200,11 @@ export default function SupportPage() {
       <footer className="border-t border-white/5 bg-black py-12 px-6">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-3">
-            <Image src="/logo.png" alt="BettingPro" width={24} height={24} className="rounded opacity-50" />
-            <span className="text-sm font-black text-zinc-600 uppercase tracking-widest">BettingPro Support Center</span>
+            <Image src="/logo.png" alt="Platinum Picks" width={24} height={24} className="rounded opacity-50" />
+            <span className="text-sm font-black text-zinc-600 uppercase tracking-widest">Platinum Picks Support Center</span>
           </div>
           <p className="text-zinc-600 text-[10px] font-medium text-center md:text-right">
-            © 2026 BettingPro. All Rights Reserved. For account deletion or data privacy requests, please contact us via email.
+            © 2026 Platinum Picks. All Rights Reserved. For account deletion or data privacy requests, please contact us via email.
           </p>
         </div>
       </footer>

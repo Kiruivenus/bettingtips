@@ -50,8 +50,8 @@ export default function BuyTipsPage() {
       <nav className="fixed top-0 left-0 right-0 w-full z-[100] border-b border-white/5 bg-black/60 backdrop-blur-xl transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.png" alt="BettingPro" width={36} height={36} className="rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
-            <span className="text-xl font-extrabold text-white">BettingPro</span>
+            <Image src="/logo.png" alt="Platinum Picks" width={36} height={36} className="rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
+            <span className="text-xl font-extrabold text-white">Platinum Picks</span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
@@ -207,7 +207,7 @@ export default function BuyTipsPage() {
 
       {/* Footer */}
       <footer className="border-t border-white/5 bg-black py-8 px-6 text-center">
-        <p className="text-zinc-600 text-sm">© 2015–2026 BettingPro. All rights reserved. Bet responsibly. 18+</p>
+        <p className="text-zinc-600 text-sm">© 2015–2026 Platinum Picks. All rights reserved. Bet responsibly. 18+</p>
       </footer>
     </div>
   );

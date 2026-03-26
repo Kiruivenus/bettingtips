@@ -132,7 +132,7 @@ export default function AdminSettingsPage() {
                   <input
                     type="text"
                     className="w-full bg-black/40 border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-sky-500/50 transition-all placeholder:text-zinc-700"
-                    placeholder="e.g. @BettingSupport"
+                    placeholder="e.g. @PlatinumSupport"
                     value={settings.telegramAgent}
                     onChange={e => setSettings({...settings, telegramAgent: e.target.value})}
                   />
@@ -168,7 +168,7 @@ export default function AdminSettingsPage() {
                   <input
                     type="email"
                     className="w-full bg-black/40 border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-white/30 transition-all placeholder:text-zinc-700"
-                    placeholder="support@bettingpro.com"
+                    placeholder="support@platinumpicks.com"
                     value={settings.supportEmail}
                     onChange={e => setSettings({...settings, supportEmail: e.target.value})}
                   />

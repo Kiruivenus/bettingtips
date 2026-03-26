@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BettingPro",
+  title: "Platinum Picks",
   description: "Premium Football Betting Tips & Predictions from Verified Tipsters",
   icons: {
     icon: [
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     apple: '/logo.png',
   },
   openGraph: {
-    title: 'BettingPro',
+    title: 'Platinum Picks',
     description: 'Premium Football Betting Tips & Predictions from Verified Tipsters',
     images: ['/logo.png'],
   },

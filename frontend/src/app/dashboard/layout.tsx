@@ -57,8 +57,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-white/5 bg-zinc-950/95 md:bg-black/40 backdrop-blur-3xl transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-20 flex items-center justify-between px-6 border-b border-white/5">
           <div className="flex items-center">
-            <Image src="/logo.png" alt="BettingPro" width={40} height={40} className="rounded-xl mr-4 shadow-[0_0_20px_rgba(16,185,129,0.3)]" />
-            <span className="text-xl font-bold tracking-tight text-white">BettingPro</span>
+            <Image src="/logo.png" alt="Platinum Picks" width={40} height={40} className="rounded-xl mr-4 shadow-[0_0_20px_rgba(16,185,129,0.3)]" />
+            <span className="text-xl font-bold tracking-tight text-white">Platinum Picks</span>
           </div>
           <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden text-zinc-400 hover:text-white p-2">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -108,8 +108,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Mobile Header */}
         <div className="md:hidden h-16 shrink-0 border-b border-white/5 bg-black/40 backdrop-blur-xl flex items-center justify-between px-4 sticky top-0 z-20">
           <div className="flex items-center">
-            <Image src="/logo.png" alt="BettingPro" width={32} height={32} className="rounded-lg mr-3" />
-            <span className="font-bold text-white tracking-tight">BettingPro</span>
+            <Image src="/logo.png" alt="Platinum Picks" width={32} height={32} className="rounded-lg mr-3" />
+            <span className="font-bold text-white tracking-tight">Platinum Picks</span>
           </div>
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -mr-2 text-zinc-400 hover:text-white transition-colors">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
