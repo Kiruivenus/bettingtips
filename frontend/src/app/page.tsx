@@ -106,9 +106,9 @@ export default function LandingPage() {
             <Link href="/free-tips" className="hover:text-white transition-colors">Free Tips</Link>
             <Link href="/buy-tips" className="hover:text-white transition-colors">Buy Tips</Link>
             <Link href="/results" className="hover:text-white transition-colors">Results</Link>
+            <Link href="/support" className="hover:text-white transition-colors">Support</Link>
             <a href="#plans" className="hover:text-white transition-colors">Pricing</a>
             <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
-            <a href="#contact" className="hover:text-white transition-colors">Contact</a>
           </div>
 
           <div className="flex items-center gap-3">
@@ -121,11 +121,12 @@ export default function LandingPage() {
         </div>
         {mobileMenuOpen && (
           <div className="md:hidden absolute top-[100%] left-0 w-full bg-black/95 border-b border-white/5 px-4 py-4 space-y-2 text-sm font-medium shadow-2xl">
-            {['#free-tips', '#plans', '#results', '#faq', '#contact'].map(href => (
+            {['#plans', '#results', '#faq'].map(href => (
               <a key={href} href={href} onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5 hover:text-white transition-colors capitalize">
                 {href.replace('#', '').replace('-', ' ')}
               </a>
             ))}
+            <Link href="/support" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Support</Link>
             <Link href="/free-tips" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Free Tips Page</Link>
             <Link href="/buy-tips" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Buy Tips</Link>
             <Link href="/results" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Results Page</Link>

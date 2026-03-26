@@ -35,8 +35,8 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
             <Link href="/" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">Home</Link>
             <Link href="/free-tips" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">Free Tips</Link>
             <Link href="/buy-tips" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">Buy Tips</Link>
-            <a href="/#faq" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">FAQ</a>
-            <a href="/#contact" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">Support</a>
+            <Link href="/#faq" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">FAQ</Link>
+            <Link href="/support" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">Support</Link>
           </nav>
 
           {/* Mobile Spacer (for centering if needed, but justify-between is fine) */}

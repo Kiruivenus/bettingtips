@@ -72,6 +72,7 @@ export default function ResultsPage() {
             <Link href="/free-tips" className="hover:text-white transition-colors">Free Tips</Link>
             <Link href="/buy-tips" className="hover:text-white transition-colors">Buy Tips</Link>
             <Link href="/results" className="text-emerald-400 transition-colors">Results</Link>
+            <Link href="/support" className="hover:text-white transition-colors">Support</Link>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login" className="text-sm font-medium text-zinc-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 hidden md:block">Sign In</Link>
@@ -87,6 +88,7 @@ export default function ResultsPage() {
             <Link href="/free-tips" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Free Tips</Link>
             <Link href="/buy-tips" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Buy Tips</Link>
             <Link href="/results" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-emerald-400 hover:bg-white/5">Results</Link>
+            <Link href="/support" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Support</Link>
             <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Sign In</Link>
           </div>
         )}

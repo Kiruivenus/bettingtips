@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import PaymentSettings from '../models/PaymentSettings';
+import PlatformSettings from '../models/PlatformSettings';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -160,5 +161,50 @@ export const getEnabledPaymentMethods = async (req: Request, res: Response) => {
     res.json(result);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching payment methods' });
+  }
+};
+
+// @desc    Get platform settings (public)
+// @route   GET /api/settings/platform
+// @access  Public
+export const getPlatformSettings = async (req: Request, res: Response) => {
+  try {
+    let settings = await PlatformSettings.findOne();
+    if (!settings) {
+      // Create default if not exists
+      settings = await PlatformSettings.create({});
+    }
+    res.json(settings);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching platform settings' });
+  }
+};
+
+// @desc    Update platform settings
+// @route   PUT /api/settings/platform
+// @access  Private/Admin
+export const updatePlatformSettings = async (req: AuthRequest, res: Response) => {
+  try {
+    const { telegramGroup, telegramAgent, whatsappAgent, supportEmail } = req.body;
+    let settings = await PlatformSettings.findOne();
+
+    if (settings) {
+      settings.telegramGroup = telegramGroup ?? settings.telegramGroup;
+      settings.telegramAgent = telegramAgent ?? settings.telegramAgent;
+      settings.whatsappAgent = whatsappAgent ?? settings.whatsappAgent;
+      settings.supportEmail = supportEmail ?? settings.supportEmail;
+      await settings.save();
+    } else {
+      settings = await PlatformSettings.create({
+        telegramGroup,
+        telegramAgent,
+        whatsappAgent,
+        supportEmail
+      });
+    }
+
+    res.json({ message: 'Platform settings updated successfully', settings });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating platform settings' });
   }
 };
