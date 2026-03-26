@@ -5,12 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/constants';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
 
   useEffect(() => {
     if (!loading) {
@@ -24,7 +26,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [pathname]);
+    if (user?.role === 'admin') {
+      fetchPendingCount();
+    }
+  }, [pathname, user]);
+
+  const fetchPendingCount = async () => {
+    if (!user?.token) return;
+    try {
+      const res = await fetch(`${API_URL}/api/payments/pending-count`, {
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPendingPaymentsCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching pending count", error);
+    }
+  };
 
   if (loading || !user || user.role !== 'admin') {
     return (
@@ -78,7 +100,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <svg className={`w-5 h-5 mr-3 shrink-0 transition-colors duration-300 ${isActive ? 'text-amber-400' : 'text-zinc-500 group-hover:text-zinc-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={link.icon} />
                 </svg>
-                <span>{link.name}</span>
+                <div className="flex-1 flex justify-between items-center">
+                  <span>{link.name}</span>
+                  {link.path === '/admin/payments' && pendingPaymentsCount > 0 && (
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-lg animate-pulse ring-2 ring-red-500/20">
+                      {pendingPaymentsCount}
+                    </span>
+                  )}
+                </div>
               </Link>
             );
           })}

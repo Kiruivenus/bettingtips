@@ -9,7 +9,8 @@ import {
   createPayPalPayment,
   executePayPalPayment,
   createMpesaPayment,
-  mpesaCallback
+  mpesaCallback,
+  getPendingPaymentsCount
 } from '../controllers/paymentController';
 import { protect, admin } from '../middlewares/authMiddleware';
 
@@ -21,6 +22,7 @@ router.put('/reject/:id', protect, admin, rejectManualPayment);
 router.get('/my-payments', protect, getMyPayments);
 router.get('/history', protect, getMyPayments);
 router.get('/', protect, admin, getAllPayments);
+router.get('/pending-count', protect, admin, getPendingPaymentsCount);
 
 router.post('/stripe/create-session', protect, createStripeSession);
 router.post('/paypal/create-payment', protect, createPayPalPayment);

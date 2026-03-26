@@ -132,6 +132,18 @@ export const getAllPayments = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// @desc    Get count of pending payments
+// @route   GET /api/payments/pending-count
+// @access  Private/Admin
+export const getPendingPaymentsCount = async (req: AuthRequest, res: Response) => {
+  try {
+    const count = await Payment.countDocuments({ status: 'pending' });
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching pending count' });
+  }
+};
+
 // @desc    Create Stripe Checkout Session
 // @route   POST /api/payments/stripe/create-session
 // @access  Private
@@ -182,18 +194,26 @@ export const stripeWebhook = async (req: Request, res: Response) => {
     const webhookSecret = settings?.webhookSecret || process.env.STRIPE_WEBHOOK_SECRET;
     const secretKey = settings?.secretKey || process.env.STRIPE_SECRET_KEY;
     
-    if (!secretKey) throw new Error('Stripe secret key not found');
+    if (!secretKey) {
+      console.error('Stripe Webhook: Secret key not found');
+      throw new Error('Stripe secret key not found');
+    }
     const stripeInstance = new Stripe(secretKey, { apiVersion: '2025-02-24.acacia' as any });
 
     event = stripeInstance.webhooks.constructEvent(req.body, sig, webhookSecret as string);
   } catch (err: any) {
+    console.error(`Stripe Webhook Error (Construction): ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
+
+  console.log(`Stripe Webhook Event Received: ${event.type}`);
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
     const userId = session.client_reference_id;
     const planId = session.metadata?.planId;
+
+    console.log(`Stripe Webhook: Processing session ${session.id} for user ${userId}, plan ${planId}`);
 
     if (userId && planId) {
       const plan = await SubscriptionPlan.findById(planId);
@@ -205,9 +225,10 @@ export const stripeWebhook = async (req: Request, res: Response) => {
           currency: session.currency?.toUpperCase() || plan.currency,
           method: 'stripe',
           status: 'completed',
-          transactionId: session.payment_intent as string,
+          transactionId: session.payment_intent as string || session.id,
         });
         await payment.save();
+        console.log(`Stripe Webhook: Payment record saved for user ${userId}`);
 
         const user = await User.findById(userId);
         if (user) {
@@ -216,8 +237,15 @@ export const stripeWebhook = async (req: Request, res: Response) => {
           expiry.setDate(expiry.getDate() + (plan.durationInDays || 30));
           user.subscriptionExpiry = expiry;
           await user.save();
+          console.log(`Stripe Webhook: User ${user.email} plan activated until ${expiry.toISOString()}`);
+        } else {
+          console.error(`Stripe Webhook: User ${userId} not found after successful payment`);
         }
+      } else {
+        console.error(`Stripe Webhook: Plan ${planId} not found`);
       }
+    } else {
+      console.error(`Stripe Webhook: Missing userId or planId in session metadata`);
     }
   }
 
