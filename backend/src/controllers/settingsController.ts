@@ -145,7 +145,7 @@ export const getEnabledPaymentMethods = async (req: Request, res: Response) => {
     const allSettings = await PaymentSettings.find({});
 
     // Fields that are safe to expose publicly (non-API-key fields)
-    const safeFields = ['email', 'username', 'walletAddress', 'network', 'acceptedCoins', 'accountHolder', 'bankName', 'accountName', 'accountNumber', 'mpesaNumber', 'instructions', 'phoneNumber', 'tillNumber'];
+    const safeFields = ['email', 'username', 'walletAddress', 'network', 'acceptedCoins', 'accountHolder', 'bankName', 'accountName', 'accountNumber', 'mpesaNumber', 'instructions', 'phoneNumber', 'tillNumber', 'tillName'];
 
     const result: Record<string, { isEnabled: boolean; details?: Record<string, string> }> = {};
     allSettings.forEach(s => {

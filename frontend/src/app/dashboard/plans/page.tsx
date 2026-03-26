@@ -155,6 +155,11 @@ export default function PlansPage() {
     setShowMpesaModal(true);
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    // Silent copy is fine, but we could add a temporary state for feedback if needed
+  };
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 relative overflow-x-hidden">
       <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 text-center max-w-none">
@@ -352,18 +357,45 @@ export default function PlansPage() {
             {(() => {
               const details = getMethodDetails(selectedManualMethod);
               if (!details) return <p className="text-zinc-500 text-sm mb-4">Payment details not configured. Contact support.</p>;
+              
+              const DetailRow = ({ label, value, isMono = false }: { label: string, value: string, isMono?: boolean }) => (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-zinc-500">{label}:</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-white ${isMono ? 'font-mono text-xs break-all bg-black/30 px-2 py-0.5 rounded' : ''}`}>{value}</span>
+                    <button 
+                      onClick={() => copyToClipboard(value)}
+                      className="text-zinc-500 hover:text-white transition-colors p-1"
+                      title="Copy to clipboard"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                    </button>
+                  </div>
+                </div>
+              );
+
               return (
-                <div className="bg-black/40 border border-white/10 rounded-xl p-4 mb-5 space-y-2">
-                  {details.email && <div className="flex justify-between text-sm"><span className="text-zinc-500">Email:</span><span className="text-white font-mono text-xs break-all">{details.email}</span></div>}
-                  {details.username && <div className="flex justify-between text-sm"><span className="text-zinc-500">Username:</span><span className="text-white font-mono">{details.username}</span></div>}
-                  {details.walletAddress && <div className="text-sm"><span className="text-zinc-500 block mb-1">Wallet Address:</span><span className="text-white font-mono text-xs break-all bg-black/40 p-2 rounded-lg block">{details.walletAddress}</span></div>}
-                  {details.network && <div className="flex justify-between text-sm"><span className="text-zinc-500">Network:</span><span className="text-white">{details.network}</span></div>}
-                  {details.acceptedCoins && <div className="flex justify-between text-sm"><span className="text-zinc-500">Accepted:</span><span className="text-white">{details.acceptedCoins}</span></div>}
-                  {details.accountHolder && <div className="flex justify-between text-sm"><span className="text-zinc-500">Name:</span><span className="text-white">{details.accountHolder}</span></div>}
-                  {details.bankName && <div className="flex justify-between text-sm"><span className="text-zinc-500">Bank:</span><span className="text-white">{details.bankName}</span></div>}
-                  {details.accountName && <div className="flex justify-between text-sm"><span className="text-zinc-500">Account Name:</span><span className="text-white">{details.accountName}</span></div>}
-                  {details.accountNumber && <div className="flex justify-between text-sm"><span className="text-zinc-500">Account No:</span><span className="text-white font-mono">{details.accountNumber}</span></div>}
-                  {details.mpesaNumber && <div className="flex justify-between text-sm"><span className="text-zinc-500">M-Pesa:</span><span className="text-white font-mono">{details.mpesaNumber}</span></div>}
+                <div className="bg-black/40 border border-white/10 rounded-xl p-4 mb-5 space-y-3">
+                  {details.email && <DetailRow label="Email" value={details.email} isMono />}
+                  {details.username && <DetailRow label="Username" value={details.username} isMono />}
+                  {details.walletAddress && (
+                    <div className="text-sm">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-zinc-500">Wallet Address:</span>
+                        <button onClick={() => copyToClipboard(details.walletAddress)} className="text-zinc-500 hover:text-white transition-colors"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg></button>
+                      </div>
+                      <span className="text-white font-mono text-xs break-all bg-black/40 p-2 rounded-lg block">{details.walletAddress}</span>
+                    </div>
+                  )}
+                  {details.network && <DetailRow label="Network" value={details.network} />}
+                  {details.acceptedCoins && <DetailRow label="Accepted" value={details.acceptedCoins} />}
+                  {details.accountHolder && <DetailRow label="Name" value={details.accountHolder} />}
+                  {details.bankName && <DetailRow label="Bank" value={details.bankName} />}
+                  {details.accountName && <DetailRow label="Account Name" value={details.accountName} />}
+                  {details.accountNumber && <DetailRow label="Account No" value={details.accountNumber} isMono />}
+                  {details.mpesaNumber && <DetailRow label="M-Pesa" value={details.mpesaNumber} isMono />}
+                  {details.tillNumber && <DetailRow label="Till Number" value={details.tillNumber} isMono />}
+                  {details.tillName && <DetailRow label="Till Name" value={details.tillName} />}
                   {details.instructions && <div className="mt-3 pt-3 border-t border-white/10"><p className="text-zinc-400 text-xs italic">{details.instructions}</p></div>}
                 </div>
               );

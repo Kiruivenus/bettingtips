@@ -33,7 +33,6 @@ const METHODS: MethodConfig[] = [
       { key: 'bankName', label: 'Bank Name', type: 'text', placeholder: 'e.g. Equity Bank Kenya' },
       { key: 'accountName', label: 'Account Name', type: 'text', placeholder: 'e.g. John Doe' },
       { key: 'accountNumber', label: 'Account Number', type: 'text', placeholder: 'e.g. 0123456789' },
-      { key: 'mpesaNumber', label: 'M-Pesa Till/Paybill (Manual)', type: 'text', placeholder: 'e.g. 522533' },
       { key: 'instructions', label: 'Payment Instructions', type: 'textarea', placeholder: 'Pay to the above details and click Submit Payment after uploading proof of payment.' },
     ],
   },
@@ -163,6 +162,7 @@ const METHODS: MethodConfig[] = [
     color: 'border-green-600/30 bg-green-600/5',
     fields: [
       { key: 'tillNumber', label: 'Till Number', type: 'text', placeholder: 'e.g. 123456' },
+      { key: 'tillName', label: 'Till Name', type: 'text', placeholder: 'e.g. Betting Tips LTD' },
       { key: 'instructions', label: 'Payment Instructions', type: 'textarea', placeholder: 'Go to Lipa Na M-Pesa -> Buy Goods -> Enter Till below. Submit your M-Pesa message reference.' },
     ],
   },
