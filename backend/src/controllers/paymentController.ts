@@ -395,6 +395,7 @@ export const createMpesaPayment = async (req: AuthRequest, res: Response) => {
     if (!token) return res.status(500).json({ message: 'Failed to generate M-PESA token (check your credentials)' });
 
     const passkey = settings.passkey;
+    const shortcode = settings.shortcode;
     const environment = settings.environment || 'sandbox';
     const exchangeRate = parseFloat(settings.exchangeRate || '125');
     const baseUrl = environment === 'live' ? 'https://api.safaricom.co.ke' : 'https://sandbox.safaricom.co.ke';
