@@ -106,7 +106,7 @@ export default function DashboardBuyTipsPage() {
                   </ul>
 
                   <div className="space-y-3 mt-auto">
-                    <Link href={`/dashboard/plans?plan=${plan._id}`} className={`w-full flex items-center justify-center h-12 rounded-xl font-bold text-sm text-white transition-all ${c.btn}`}>
+                    <Link href={`/dashboard/plans?planId=${plan._id}`} className={`w-full flex items-center justify-center h-12 rounded-xl font-bold text-sm text-white transition-all ${c.btn}`}>
                       Choose Plan
                     </Link>
                   </div>

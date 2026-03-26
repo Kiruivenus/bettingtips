@@ -20,7 +20,7 @@ export default function PlansPage() {
   const { user, refreshUser } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const planIdParam = searchParams.get('planId');
+  const planIdParam = searchParams.get('planId') || searchParams.get('plan');
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
