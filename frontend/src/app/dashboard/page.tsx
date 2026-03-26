@@ -75,50 +75,16 @@ export default function DashboardPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 
-            {/* Free Plan Card – Always First */}
-            <Link
-              href="/dashboard/games/free"
-              className="group relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/10 to-emerald-500/5 p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/50 shadow-[0_0_25px_rgba(16,185,129,0.08)]"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+            {/* Sorting Logic: 
+                1. If there is an active primitive plan, show it first.
+                2. Then show the Free Plan card.
+                3. Then show all other premium plans (locked).
+            */}
 
-              <div className="flex items-center justify-between mb-5">
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-wider">
-                  Free Plan
-                </span>
-                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                </div>
-              </div>
-
-              <h3 className="text-xl font-bold text-white mb-1">Free Betting Tips</h3>
-              <p className="text-sm text-zinc-400 mb-6 flex-1">Access our daily free predictions with full transparency and verified results.</p>
-
-              <div className="flex items-center gap-3 mb-6">
-                <div className="text-2xl font-extrabold text-emerald-400">FREE</div>
-                <span className="text-xs text-zinc-500">/ forever</span>
-              </div>
-
-              <ul className="space-y-2 mb-6">
-                {['Daily free predictions', 'Full results archive', 'Basic match analysis'].map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-xs text-zinc-300">
-                    <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-auto flex items-center justify-center h-11 rounded-xl font-bold text-sm text-black bg-emerald-400 group-hover:bg-emerald-300 transition-colors shadow-[0_0_15px_rgba(52,211,153,0.2)]">
-                Claim Free Bet
-              </div>
-            </Link>
-
-            {/* Premium Plan Cards */}
-            {plans.map((plan, idx) => {
-              const owned = isPlanOwned(plan._id);
-              const c = colors[idx % colors.length];
-
-              return owned ? (
+            {/* 1. Active Premium Plan (if any) */}
+            {plans.filter(p => isPlanOwned(p._id)).map((plan, idx) => {
+              const c = colors[plans.indexOf(plan) % colors.length];
+              return (
                 <Link
                   key={plan._id}
                   href={`/dashboard/games/${plan._id}`}
@@ -161,7 +127,53 @@ export default function DashboardPage() {
                     View Games →
                   </div>
                 </Link>
-              ) : (
+              );
+            })}
+
+            {/* 2. Free Plan Card */}
+            <Link
+              href="/dashboard/games/free"
+              className="group relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/10 to-emerald-500/5 p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/50 shadow-[0_0_25px_rgba(16,185,129,0.08)]"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+
+              <div className="flex items-center justify-between mb-5">
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-wider">
+                  Free Plan
+                </span>
+                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                </div>
+              </div>
+
+              <h3 className="text-xl font-bold text-white mb-1">Free Betting Tips</h3>
+              <p className="text-sm text-zinc-400 mb-6 flex-1">Access our daily free predictions with full transparency and verified results.</p>
+
+              <div className="flex items-center gap-3 mb-6">
+                <div className="text-2xl font-extrabold text-emerald-400">FREE</div>
+                <span className="text-xs text-zinc-500">/ forever</span>
+              </div>
+
+              <ul className="space-y-2 mb-6">
+                {['Daily free predictions', 'Full results archive', 'Basic match analysis'].map((f, i) => (
+                  <li key={i} className="flex items-center gap-2 text-xs text-zinc-300">
+                    <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-auto flex items-center justify-center h-11 rounded-xl font-bold text-sm text-black bg-emerald-400 group-hover:bg-emerald-300 transition-colors shadow-[0_0_15px_rgba(52,211,153,0.2)]">
+                Claim Free Bet
+              </div>
+            </Link>
+
+            {/* 3. Other Premium Plan Cards (Locked) */}
+            {plans.filter(p => !isPlanOwned(p._id)).map((plan, idx) => {
+              const originalIdx = plans.indexOf(plan);
+              const c = colors[originalIdx % colors.length];
+
+              return (
                 <Link
                   key={plan._id}
                   href="/dashboard/buy-tips"
