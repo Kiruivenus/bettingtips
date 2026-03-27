@@ -17,7 +17,7 @@ interface Tip {
   isPremium: boolean;
   matchDate: string;
   result?: string;
-  planId?: { _id: string; name: string } | string;
+  planIds?: Array<{ _id: string; name: string }> | string[];
 }
 
 interface Plan {
@@ -44,7 +44,7 @@ export default function GamesPage() {
     ? new Date(user.subscriptionExpiry) > new Date()
     : false;
   const activeId = typeof userActivePlan === 'string' ? userActivePlan : userActivePlan?._id;
-  const hasAccess = isFree || (isSubscriptionActive && activeId === planId);
+  const hasAccess = isFree || (isSubscriptionActive && (activeId === planId || user?.role === 'admin'));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,8 +61,10 @@ export default function GamesPage() {
               setTips(tipsData.filter((t: Tip) => !t.isPremium));
             } else {
               setTips(tipsData.filter((t: Tip) => {
-                const tipPlanId = typeof t.planId === 'object' && t.planId ? t.planId._id : t.planId;
-                return tipPlanId === planId;
+                if (!t.planIds) return false;
+                // Handle both populated and unpopulated planIds
+                const ids = t.planIds.map((p: any) => typeof p === 'object' && p ? p._id : p);
+                return ids.includes(planId);
               }));
             }
           }

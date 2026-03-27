@@ -17,10 +17,7 @@ interface Tip {
   matchDate: string;
   confidence: number;
   result?: string;
-  planId?: {
-    _id: string;
-    name: string;
-  };
+  planIds?: Array<{ _id: string; name: string }> | string[];
 }
 
 export default function ResultsPage() {

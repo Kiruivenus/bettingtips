@@ -10,10 +10,7 @@ interface Tip {
   isPremium: boolean;
   matchDate: string;
   result?: string;
-  planId?: {
-    _id: string;
-    name: string;
-  } | any;
+  planIds?: Array<{ _id: string; name: string }> | string[];
 }
 
 interface MatchResultsProps {

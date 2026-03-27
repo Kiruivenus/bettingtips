@@ -15,6 +15,7 @@ interface Tip {
   isPremium: boolean;
   matchDate: string;
   confidence: number;
+  planIds?: Array<{ _id: string; name: string }> | string[];
 }
 
 interface Plan {
