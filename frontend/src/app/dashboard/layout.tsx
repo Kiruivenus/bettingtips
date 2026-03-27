@@ -102,12 +102,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+      <main className="flex-1 flex flex-col min-w-0 relative">
         <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/10 blur-[150px] pointer-events-none" />
         <div className="absolute bottom-[-10%] left-[20%] w-[30%] h-[30%] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none" />
         
-        {/* Mobile Header */}
-        <div className="md:hidden h-16 shrink-0 border-b border-white/5 bg-black/40 backdrop-blur-xl flex items-center justify-between px-4 sticky top-0 z-20">
+        {/* Mobile Header - Fixed */}
+        <div className="md:hidden h-16 shrink-0 border-b border-white/5 bg-black/60 backdrop-blur-xl flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-30">
           <div className="flex items-center">
             <Image src="/logo.png" alt="Platinum Picks" width={32} height={32} className="rounded-lg mr-3" />
             <span className="font-bold text-white tracking-tight">Platinum Picks</span>
@@ -118,6 +118,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </svg>
           </button>
         </div>
+        
+        {/* Spacer for fixed mobile header */}
+        <div className="md:hidden h-16 shrink-0" />
         
         <div className="flex-1 overflow-y-auto relative z-10 w-full max-w-6xl mx-auto">
           {children}
