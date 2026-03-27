@@ -9,7 +9,7 @@ export default function LiveScoresPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans">
+    <div className="min-h-screen bg-zinc-950 text-white overflow-x-hidden font-sans">
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 w-full z-[100] border-b border-white/5 bg-black/60 backdrop-blur-xl transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -34,7 +34,7 @@ export default function LiveScoresPage() {
             </button>
           </div>
         </div>
-        
+
         {mobileMenuOpen && (
           <div className="md:hidden absolute top-[100%] left-0 w-full bg-black/95 border-b border-white/5 px-4 py-4 space-y-2 text-sm font-medium shadow-2xl">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Home</Link>
@@ -50,11 +50,7 @@ export default function LiveScoresPage() {
       <section className="pt-28 pb-24 px-4 text-center relative overflow-hidden">
         <div className="absolute top-0 right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/10 blur-[150px] pointer-events-none" />
         <div className="absolute bottom-0 left-[-5%] w-[40%] h-[40%] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none" />
-        
-        <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">Real-Time Football Scores</h1>
-        <p className="text-zinc-400 text-lg max-w-2xl mx-auto mb-12">
-          Stay updated with the latest match status, live results, and upcoming fixtures from all the major leagues worldwide.
-        </p>
+
 
         <LiveScoresContent />
       </section>

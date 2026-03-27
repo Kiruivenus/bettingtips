@@ -98,7 +98,7 @@ export default function GamesPage() {
   if (!loading && !hasAccess) {
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
+        <header className="md:sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
           <Link href="/dashboard" className="text-xs text-zinc-500 hover:text-white transition-colors mb-3 inline-flex items-center gap-1">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             Back to Plans

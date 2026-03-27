@@ -60,7 +60,7 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
+      <header className="md:sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-white mb-1">My Plans</h1>
         <p className="text-zinc-400 text-sm">Choose a plan to view today's expert predictions.</p>
       </header>

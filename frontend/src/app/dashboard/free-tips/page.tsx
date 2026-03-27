@@ -48,7 +48,7 @@ export default function DashboardFreeTipsPage() {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
+      <header className="md:sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Free Football Tips</h1>
         <p className="text-zinc-400 text-lg">Expert football predictions, verified results, completely free.</p>
         

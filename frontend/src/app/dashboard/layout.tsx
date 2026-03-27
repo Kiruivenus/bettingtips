@@ -107,7 +107,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="absolute bottom-[-10%] left-[20%] w-[30%] h-[30%] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none" />
         
         {/* Mobile Header - Fixed */}
-        <div className="md:hidden h-16 shrink-0 border-b border-white/5 bg-black/80 backdrop-blur-xl flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-30">
+        <div className="md:hidden h-16 shrink-0 border-b border-white/5 bg-black/80 backdrop-blur-xl flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-40">
           <div className="flex items-center">
             <Image src="/logo.png" alt="Platinum Picks" width={32} height={32} className="rounded-lg mr-3 shadow-[0_0_15px_rgba(16,185,129,0.2)]" />
             <span className="font-bold text-white tracking-tight">Platinum Picks</span>

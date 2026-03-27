@@ -46,7 +46,7 @@ export default function PaymentHistoryPage() {
   if (loading) {
     return (
       <div className="animate-in fade-in zoom-in-95 duration-500">
-        <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 flex flex-col justify-center">
+        <header className="md:sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 flex flex-col justify-center">
           <h1 className="text-3xl font-bold tracking-tight text-white mb-1">Payment History</h1>
           <p className="text-zinc-400 text-sm">Loading your transactions...</p>
         </header>
@@ -60,7 +60,7 @@ export default function PaymentHistoryPage() {
 
   return (
     <div className="animate-in fade-in zoom-in-95 duration-500">
-      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 flex flex-col justify-center">
+      <header className="md:sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 flex flex-col justify-center">
         <h1 className="text-3xl font-bold tracking-tight text-white mb-1">Payment History</h1>
         <p className="text-zinc-400 text-sm">View all your past and pending subscriptions.</p>
       </header>

@@ -37,7 +37,7 @@ export default function DashboardFaqPage() {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
+      <header className="md:sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
         <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider mb-4">❓ FAQ</div>
         <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Frequently Asked Questions</h1>
         <p className="text-zinc-400 text-lg">Everything you need to know about Platinum Picks.</p>

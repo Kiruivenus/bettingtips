@@ -45,7 +45,7 @@ export default function SupportPage() {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden">
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 w-full z-[100] border-b border-white/5 bg-black/60 backdrop-blur-xl transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
