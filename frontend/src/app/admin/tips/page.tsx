@@ -14,10 +14,7 @@ interface Tip {
   matchDate: string;
   status: 'pending' | 'won' | 'lost';
   isPremium: boolean;
-  planId?: {
-    _id: string;
-    name: string;
-  };
+  planIds?: Array<{ _id: string; name: string }>;
   result?: string;
 }
 
@@ -45,7 +42,7 @@ export default function AdminTipsPage() {
     matchDate: '',
     status: 'pending',
     isPremium: false,
-    planId: '',
+    planIds: [] as string[],
     result: ''
   });
   
@@ -101,7 +98,7 @@ export default function AdminTipsPage() {
         matchDate: new Date(tip.matchDate).toISOString().slice(0, 16),
         status: tip.status,
         isPremium: tip.isPremium,
-        planId: typeof tip.planId === 'object' ? tip.planId?._id || '' : (tip.planId || ''),
+        planIds: Array.isArray(tip.planIds) ? tip.planIds.map((p: any) => typeof p === 'object' ? p._id : p) : [],
         result: tip.result || ''
       });
     } else {
@@ -109,7 +106,7 @@ export default function AdminTipsPage() {
       setFormData({
         match: '', league: '', odds: '', prediction: '',
         confidence: '80', matchDate: new Date().toISOString().slice(0, 16),
-        status: 'pending', isPremium: false, planId: '',
+        status: 'pending', isPremium: false, planIds: [] as string[],
         result: ''
       });
     }
@@ -129,7 +126,7 @@ export default function AdminTipsPage() {
       ...formData,
       odds: Number(formData.odds),
       confidence: Number(formData.confidence),
-      planId: formData.isPremium ? formData.planId : null
+      planIds: formData.isPremium ? formData.planIds : []
     };
 
     try {
@@ -280,7 +277,7 @@ export default function AdminTipsPage() {
                           <td className="px-6 py-4">
                             <div className="flex flex-col items-center gap-1">
                               <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter ${tip.isPremium ? 'bg-purple-500/20 text-purple-400 border border-purple-500/10' : 'bg-blue-500/20 text-blue-400 border border-blue-500/10'}`}>
-                                {tip.isPremium ? `${tip.planId?.name || 'VIP'} Premium` : 'Public Free'}
+                                {tip.isPremium ? `${tip.planIds?.map((p: any) => p.name || p).join(', ') || 'VIP'} Premium` : 'Public Free'}
                               </span>
                               <div className="text-[9px] text-zinc-600 font-black">{tip.confidence}% Match Confidence</div>
                             </div>
@@ -373,18 +370,51 @@ export default function AdminTipsPage() {
 
                     {formData.isPremium && (
                       <div className="mb-4 animate-in fade-in slide-in-from-top-1 duration-200">
-                        <label className="block text-[10px] font-bold text-zinc-500 mb-1.5 uppercase tracking-wider">Select Subscription Plan</label>
-                        <select 
-                          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-amber-500/50 text-sm"
-                          value={formData.planId}
-                          onChange={e => setFormData({...formData, planId: e.target.value})}
-                          required={formData.isPremium}
-                        >
-                          <option value="">-- Associate with a Plan --</option>
+                        <label className="block text-[10px] font-bold text-zinc-500 mb-2 uppercase tracking-wider">Select Subscription Plans</label>
+                        
+                        {/* Select All */}
+                        <div className="flex items-center mb-2 py-2 px-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+                          <input 
+                            type="checkbox" 
+                            id="selectAll" 
+                            className="w-4 h-4 rounded bg-black/40 border-white/10 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-zinc-900"
+                            checked={formData.planIds.length === plans.length && plans.length > 0}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData({ ...formData, planIds: plans.map(p => p._id) });
+                              } else {
+                                setFormData({ ...formData, planIds: [] });
+                              }
+                            }}
+                          />
+                          <label htmlFor="selectAll" className="ml-2 text-sm text-emerald-400 font-bold">Select All Plans</label>
+                        </div>
+
+                        {/* Individual Plans */}
+                        <div className="space-y-1.5">
                           {plans.map(plan => (
-                            <option key={plan._id} value={plan._id}>{plan.name}</option>
+                            <div key={plan._id} className="flex items-center py-2 px-3 rounded-lg bg-white/3 hover:bg-white/5 transition-colors">
+                              <input 
+                                type="checkbox" 
+                                id={`plan-${plan._id}`} 
+                                className="w-4 h-4 rounded bg-black/40 border-white/10 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-zinc-900"
+                                checked={formData.planIds.includes(plan._id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setFormData({ ...formData, planIds: [...formData.planIds, plan._id] });
+                                  } else {
+                                    setFormData({ ...formData, planIds: formData.planIds.filter((id: string) => id !== plan._id) });
+                                  }
+                                }}
+                              />
+                              <label htmlFor={`plan-${plan._id}`} className="ml-2 text-sm text-zinc-300">{plan.name}</label>
+                            </div>
                           ))}
-                        </select>
+                        </div>
+
+                        {formData.planIds.length > 0 && (
+                          <p className="text-[10px] text-zinc-500 mt-2">{formData.planIds.length} plan(s) selected</p>
+                        )}
                       </div>
                     )}
 

@@ -17,7 +17,7 @@ const hasActivePremium = (req: AuthRequest): boolean => {
 // @access  Public (Premium details hidden if not subscribed)
 export const getTips = async (req: AuthRequest, res: Response) => {
   try {
-    const tips = await Tip.find({}).sort({ matchDate: -1 }).populate('planId', 'name');
+    const tips = await Tip.find({}).sort({ matchDate: -1 }).populate('planIds', 'name');
     const isPremiumUser = hasActivePremium(req);
 
     const formattedTips = tips.map((tip) => {
