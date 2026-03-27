@@ -48,6 +48,8 @@ export default function AdminTipsPage() {
   
   const [toast, setToast] = useState<{message: string, type: 'success'|'error'} | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [quickResults, setQuickResults] = useState<Record<string, string>>({});
+  const [quickUpdating, setQuickUpdating] = useState<string | null>(null);
 
   const fetchTips = async () => {
     try {
@@ -170,6 +172,27 @@ export default function AdminTipsPage() {
     }
   };
 
+  const handleQuickUpdate = async (tipId: string, status: 'won' | 'lost') => {
+    setQuickUpdating(tipId);
+    try {
+      const res = await fetch(`${API_URL}/api/tips/${tipId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user?.token}`
+        },
+        body: JSON.stringify({ status, result: quickResults[tipId] || '' })
+      });
+      if (!res.ok) throw new Error('Failed to update');
+      showToast(`Tip marked as ${status}`, 'success');
+      fetchTips();
+    } catch (error) {
+      showToast('Failed to update tip', 'error');
+    } finally {
+      setQuickUpdating(null);
+    }
+  };
+
   return (
     <div className="animate-in fade-in duration-500 relative">
       {/* Toast Notification */}
@@ -283,13 +306,44 @@ export default function AdminTipsPage() {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => handleOpenModal(tip)} className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-all" title="Edit Tip">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                              </button>
-                              <button onClick={() => { setCurrentTip(tip); setIsDeleteModalOpen(true); }} className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all" title="Delete Tip">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                              </button>
+                            <div className="flex flex-col gap-2">
+                              {/* Quick Result Input */}
+                              {tip.status === 'pending' && (
+                                <div className="flex items-center gap-1.5">
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. 2-1"
+                                    value={quickResults[tip._id] || ''}
+                                    onChange={(e) => setQuickResults({ ...quickResults, [tip._id]: e.target.value })}
+                                    className="w-20 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/40"
+                                  />
+                                  <button
+                                    disabled={quickUpdating === tip._id}
+                                    onClick={() => handleQuickUpdate(tip._id, 'won')}
+                                    className="px-2.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold uppercase transition-all disabled:opacity-50"
+                                    title="Mark as Won"
+                                  >
+                                    ✓ Won
+                                  </button>
+                                  <button
+                                    disabled={quickUpdating === tip._id}
+                                    onClick={() => handleQuickUpdate(tip._id, 'lost')}
+                                    className="px-2.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg text-[10px] font-bold uppercase transition-all disabled:opacity-50"
+                                    title="Mark as Lost"
+                                  >
+                                    ✗ Lost
+                                  </button>
+                                </div>
+                              )}
+                              {/* Edit / Delete */}
+                              <div className="flex items-center justify-end gap-2">
+                                <button onClick={() => handleOpenModal(tip)} className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-all" title="Edit Tip">
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                </button>
+                                <button onClick={() => { setCurrentTip(tip); setIsDeleteModalOpen(true); }} className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all" title="Delete Tip">
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                              </div>
                             </div>
                           </td>
                         </tr>
