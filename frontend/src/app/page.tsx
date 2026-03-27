@@ -104,6 +104,7 @@ export default function LandingPage() {
 
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
             <Link href="/free-tips" className="hover:text-white transition-colors">Free Tips</Link>
+            <Link href="/livescores" className="hover:text-white transition-colors">Live Scores</Link>
             <Link href="/buy-tips" className="hover:text-white transition-colors">Buy Tips</Link>
             <Link href="/results" className="hover:text-white transition-colors">Results</Link>
             <Link href="/support" className="hover:text-white transition-colors">Support</Link>
@@ -128,6 +129,7 @@ export default function LandingPage() {
             ))}
             <Link href="/support" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Support</Link>
             <Link href="/free-tips" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Free Tips Page</Link>
+            <Link href="/livescores" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Live Scores</Link>
             <Link href="/buy-tips" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Buy Tips</Link>
             <Link href="/results" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Results Page</Link>
             <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Sign In</Link>

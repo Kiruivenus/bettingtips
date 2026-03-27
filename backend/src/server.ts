@@ -13,6 +13,7 @@ import userRoutes from './routes/userRoutes';
 import faqRoutes from './routes/faqRoutes';
 import contactRoutes from './routes/contactRoutes';
 import settingsRoutes from './routes/settingsRoutes';
+import liveScoreRoutes from './routes/liveScoreRoutes';
 
 
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/faqs', faqRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/livescores', liveScoreRoutes);
 
 // Basic health check
 app.get('/api/health', (req, res) => {
