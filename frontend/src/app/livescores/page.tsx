@@ -21,7 +21,7 @@ export default function LiveScoresPage() {
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <Link href="/free-tips" className="hover:text-white transition-colors">Free Tips</Link>
-            <Link href="/livescores" className="text-emerald-400">Live Scores</Link>
+            <Link href="/livescores" className="text-emerald-400">Live Score</Link>
             <Link href="/buy-tips" className="hover:text-white transition-colors">Buy Tips</Link>
             <Link href="/results" className="hover:text-white transition-colors">Results</Link>
           </div>
