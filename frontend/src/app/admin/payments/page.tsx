@@ -85,9 +85,11 @@ export default function AdminPaymentsPage() {
         </div>
       )}
 
-      <header className="mb-8 border-b border-white/5 pb-6">
-        <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Manage Transactions</h1>
-        <p className="text-zinc-400">Review automated receipts and manually approve specific payment flows.</p>
+      <header className="sticky top-0 z-20 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 pb-6 pt-0 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 mb-8">
+        <div className="pt-6">
+          <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Manage Transactions</h1>
+          <p className="text-zinc-400">Review automated receipts and manually approve specific payment flows.</p>
+        </div>
       </header>
 
       {/* Main Content */}

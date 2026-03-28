@@ -94,8 +94,8 @@ export default function AdminFAQsPage() {
           <span className="font-medium text-sm">{toast.message}</span>
         </div>
       )}
-      <header className="mb-8 border-b border-white/5 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+      <header className="sticky top-0 z-20 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 pb-6 pt-0 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="pt-6">
           <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Manage FAQs</h1>
           <p className="text-zinc-400">Add, edit, or remove frequently asked questions shown on the landing page.</p>
         </div>

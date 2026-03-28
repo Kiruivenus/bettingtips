@@ -69,14 +69,16 @@ export default function AdminMessagesPage() {
         </div>
       )}
 
-      <header className="mb-8 border-b border-white/5 pb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Contact Messages</h1>
-          {unreadCount > 0 && (
-            <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-bold bg-amber-500 text-white rounded-full">{unreadCount}</span>
-          )}
+      <header className="sticky top-0 z-20 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 pb-6 pt-0 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 mb-8">
+        <div className="pt-6">
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-extrabold text-white tracking-tight">Contact Messages</h1>
+            {unreadCount > 0 && (
+              <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-bold bg-amber-500 text-white rounded-full">{unreadCount}</span>
+            )}
+          </div>
+          <p className="text-zinc-400">Messages submitted from the website landing page contact form.</p>
         </div>
-        <p className="text-zinc-400">Messages submitted from the website landing page contact form.</p>
       </header>
 
       {loading ? (

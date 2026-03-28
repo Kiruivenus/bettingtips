@@ -138,10 +138,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[150px] pointer-events-none" />
         <div className="absolute bottom-[-10%] left-[20%] w-[30%] h-[30%] rounded-full bg-orange-500/5 blur-[120px] pointer-events-none" />
         
-        {/* Mobile Header */}
-        <div className="md:hidden h-16 shrink-0 border-b border-white/5 bg-black/40 backdrop-blur-xl flex items-center justify-between px-4 sticky top-0 z-20">
+        {/* Mobile Header - Fixed */}
+        <div className="md:hidden h-16 shrink-0 border-b border-white/5 bg-black/80 backdrop-blur-xl flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-40">
           <div className="flex items-center">
-            <Image src="/logo.png" alt="Admin" width={32} height={32} className="rounded-lg mr-3" />
+            <Image src="/logo.png" alt="Admin" width={32} height={32} className="rounded-lg mr-3 shadow-[0_0_15px_rgba(245,158,11,0.2)]" />
             <span className="font-bold text-white tracking-tight">Admin Hub</span>
           </div>
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -mr-2 text-zinc-400 hover:text-white transition-colors">
@@ -150,6 +150,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </svg>
           </button>
         </div>
+        
+        {/* Spacer for fixed mobile header */}
+        <div className="md:hidden h-16 shrink-0" />
         
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 relative z-10 w-full max-w-6xl mx-auto">
           {children}
