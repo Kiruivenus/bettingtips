@@ -145,18 +145,18 @@ export default function LandingPage() {
         
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium mb-8">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          Expert tips published daily
+          Sure odds & expert picks updated daily
         </div>
 
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 max-w-4xl leading-tight">
-          <span className="text-white">Win More With </span>
-          <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Verified</span>
+          <span className="text-white">Best Betting Tips Today — </span>
+          <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Free &amp; VIP</span>
           <br />
           <span className="text-white">Football Predictions</span>
         </h1>
 
         <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mb-10 leading-relaxed">
-          Professional football betting tips with outstanding win rates. Buy safe, verified predictions from expert tipsters and start profiting today.
+          Get today&apos;s most accurate football betting tips for free. Expert-verified predictions with sure odds, daily picks, and VIP premium tips trusted by 2,000+ winning bettors across Kenya &amp; Africa.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-16">
