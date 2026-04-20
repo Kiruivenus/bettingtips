@@ -112,6 +112,7 @@ const updateEnvFile = (method: string, settings: Record<string, string>) => {
         consumerSecret: 'MPESA_CONSUMER_SECRET',
         passkey: 'MPESA_PASSKEY',
         shortcode: 'MPESA_SHORTCODE',
+        tillNumber: 'MPESA_TILL_NUMBER',
       },
     };
 
