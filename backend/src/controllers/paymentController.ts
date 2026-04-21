@@ -106,14 +106,11 @@ export const rejectManualPayment = async (req: AuthRequest, res: Response) => {
 
     // If it was previously completed, remove the plan from the user
     if (previousStatus === 'completed') {
-      const user = await User.findById(payment.user);
-      if (user) {
-        console.log(`Reverting plan for user ${user.email} due to payment rejection`);
-        // Use any to bypass TS strictly if needed, but Mongoose accepts null/undefined to unset
-        user.activePlan = undefined;
-        user.subscriptionExpiry = undefined;
-        await user.save();
-      }
+      console.log(`Reverting plan for user ID: ${payment.user} due to payment rejection`);
+      await User.updateOne(
+        { _id: payment.user },
+        { $unset: { activePlan: 1, subscriptionExpiry: 1 } }
+      );
     }
 
     res.json(payment);
