@@ -95,15 +95,30 @@ export const rejectManualPayment = async (req: AuthRequest, res: Response) => {
     const payment = await Payment.findById(req.params.id);
     if (!payment) return res.status(404).json({ message: 'Payment not found' });
 
-    if (payment.status === 'completed' || payment.status === 'declined') {
+    // Allow rejecting if it's pending OR if it's already completed (to revert)
+    if (payment.status === 'declined') {
       return res.status(400).json({ message: `Payment already ${payment.status}` });
     }
 
+    const previousStatus = payment.status;
     payment.status = 'declined';
     await payment.save();
 
+    // If it was previously completed, remove the plan from the user
+    if (previousStatus === 'completed') {
+      const user = await User.findById(payment.user);
+      if (user) {
+        console.log(`Reverting plan for user ${user.email} due to payment rejection`);
+        // Use any to bypass TS strictly if needed, but Mongoose accepts null/undefined to unset
+        user.activePlan = undefined;
+        user.subscriptionExpiry = undefined;
+        await user.save();
+      }
+    }
+
     res.json(payment);
   } catch (error) {
+    console.error('Error rejecting payment:', error);
     res.status(500).json({ message: 'Error rejecting payment' });
   }
 };

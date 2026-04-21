@@ -158,27 +158,38 @@ export default function AdminPaymentsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {p.status === 'pending' ? (
-                        processingId === p._id ? (
-                          <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin inline-block mr-8" />
-                        ) : (
-                          <div className="flex items-center justify-end gap-2 text-xs">
+                      {processingId === p._id ? (
+                        <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin inline-block mr-4" />
+                      ) : (
+                        <div className="flex items-center justify-end gap-2 text-xs">
+                          {p.status === 'pending' && (
                             <button 
                               onClick={() => handleAction(p._id, 'approve')}
-                              className="px-3 py-1.5 rounded-lg font-bold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors"
+                              className="px-3 py-1.5 rounded-lg font-bold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.1)]"
                             >
                               Approve
                             </button>
+                          )}
+                          {(p.status === 'pending' || p.status === 'completed') && (
                             <button 
-                              onClick={() => handleAction(p._id, 'reject')}
-                              className="px-3 py-1.5 rounded-lg font-bold bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-colors"
+                              onClick={() => {
+                                if (p.status === 'completed' && !confirm('Are you sure you want to REVERT this approved payment to DECLINED? The user will lose their active plan.')) return;
+                                handleAction(p._id, 'reject');
+                              }}
+                              className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${
+                                p.status === 'completed' 
+                                  ? 'bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 border-white/5 hover:border-red-500/20' 
+                                  : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20'
+                              }`}
+                              title={p.status === 'completed' ? 'Revert to Declined' : 'Reject'}
                             >
-                              Reject
+                              {p.status === 'completed' ? 'Revert' : 'Reject'}
                             </button>
-                          </div>
-                        )
-                      ) : (
-                        <span className="text-[10px] text-zinc-500 italic uppercase">Processed</span>
+                          )}
+                          {p.status === 'declined' && (
+                            <span className="text-[10px] text-zinc-500 italic uppercase">Processed</span>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>
