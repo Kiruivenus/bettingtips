@@ -49,13 +49,13 @@ export default function Navbar() {
         
         {/* Brand Logo & Title */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 rounded-md overflow-hidden bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+          <div className="w-8 h-8 flex items-center justify-center bg-transparent border-0">
             <Image 
               src="/logo.png" 
               alt="Platinum Picks" 
               width={32} 
               height={32} 
-              className="object-cover"
+              className="object-contain"
             />
           </div>
           <div className="flex flex-col">

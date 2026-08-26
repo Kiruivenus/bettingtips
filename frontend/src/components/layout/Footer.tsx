@@ -11,8 +11,8 @@ export default function Footer() {
           {/* Brand Col */}
           <div className="space-y-3 md:col-span-1">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-md bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-                <Image src="/logo.png" alt="Platinum Picks" width={24} height={24} />
+              <div className="w-7 h-7 flex items-center justify-center bg-transparent border-0">
+                <Image src="/logo.png" alt="Platinum Picks" width={28} height={28} className="object-contain" />
               </div>
               <span className="text-sm font-semibold text-zinc-100">Platinum Picks</span>
             </div>

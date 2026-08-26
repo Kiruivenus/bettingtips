@@ -54,8 +54,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className={`fixed inset-y-0 left-0 z-50 w-60 border-r border-zinc-800 bg-zinc-950 md:static md:translate-x-0 transition-transform duration-200 flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-16 flex items-center justify-between px-5 border-b border-zinc-800 shrink-0">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-              <Image src="/logo.png" alt="Platinum Picks" width={24} height={24} />
+            <div className="w-7 h-7 flex items-center justify-center bg-transparent border-0">
+              <Image src="/logo.png" alt="Platinum Picks" width={28} height={28} className="object-contain" />
             </div>
             <span className="text-sm font-bold text-white tracking-tight">Platinum Picks</span>
           </Link>
