@@ -79,6 +79,15 @@ export const MatchCard: React.FC<MatchProps> = ({ match }) => {
     liveTimeString = `LIVE ${match.fixture.status.elapsed}'`;
   }
 
+  const matchDateObj = new Date(match.fixture.date);
+  const isValidDate = !isNaN(matchDateObj.getTime());
+  const formattedDate = isValidDate
+    ? matchDateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+    : '';
+  const formattedTime = isValidDate
+    ? matchDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : '';
+
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 font-numeric transition-colors hover:border-zinc-700">
       {/* League Header */}
@@ -104,10 +113,12 @@ export const MatchCard: React.FC<MatchProps> = ({ match }) => {
               {liveTimeString}
             </div>
           ) : isFinished ? (
-            <span className="text-[10px] font-semibold text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded">FINISHED</span>
+            <span className="text-[10px] font-semibold text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded">
+              FT {formattedDate ? `• ${formattedDate}` : ''}
+            </span>
           ) : (
             <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-950 border border-emerald-800/50 px-2 py-0.5 rounded">
-              {new Date(match.fixture.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {formattedDate ? `${formattedDate} • ${formattedTime}` : formattedTime}
             </span>
           )}
         </div>
