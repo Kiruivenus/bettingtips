@@ -1,34 +1,77 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ITip extends Document {
-  match: string;
+  externalFixtureId?: string;
+  homeTeam?: string;
+  awayTeam?: string;
   league: string;
-  odds: number;
-  prediction: string;
-  confidence: number;
+  country?: string;
+  kickoffTime?: Date;
   matchDate: Date;
-  status: 'pending' | 'won' | 'lost';
+  match: string;
+  predictionType?: '1X2' | 'BTTS' | 'OVER_UNDER_2_5' | 'CORRECT_SCORE' | 'CUSTOM';
+  selection?: string;
+  prediction: string;
+  probability?: number;
+  confidence: number;
+  referenceOdds?: number | null;
+  odds: number;
+  accessLevel?: 'FREE' | 'VIP_BASIC' | 'VIP_PREMIUM' | 'VIP_ELITE' | 'VIP';
+  vipTier?: string;
+  status: 'UPCOMING' | 'ACTIVE' | 'LOCKED' | 'COMPLETED' | 'VOID' | 'FAILED' | 'pending' | 'won' | 'lost';
+  source?: string;
+  modelVersion?: string;
+  result?: string;
+  settledAt?: Date;
   isPremium: boolean;
   planIds?: mongoose.Types.ObjectId[];
-  result?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const TipSchema: Schema = new Schema(
   {
-    match: { type: String, required: true },
+    externalFixtureId: { type: String, index: true },
+    homeTeam: { type: String },
+    awayTeam: { type: String },
     league: { type: String, required: true },
-    odds: { type: Number, required: true },
-    prediction: { type: String, required: true },
-    confidence: { type: Number, required: true, min: 1, max: 100 },
+    country: { type: String, default: '' },
+    kickoffTime: { type: Date },
     matchDate: { type: Date, required: true },
-    status: { type: String, enum: ['pending', 'won', 'lost'], default: 'pending' },
+    match: { type: String, required: true },
+    predictionType: { 
+      type: String, 
+      enum: ['1X2', 'BTTS', 'OVER_UNDER_2_5', 'CORRECT_SCORE', 'CUSTOM'],
+      default: '1X2' 
+    },
+    selection: { type: String },
+    prediction: { type: String, required: true },
+    probability: { type: Number, min: 0, max: 100 },
+    confidence: { type: Number, required: true, min: 1, max: 100 },
+    referenceOdds: { type: Number, default: null },
+    odds: { type: Number, required: true, default: 0 },
+    accessLevel: { 
+      type: String, 
+      enum: ['FREE', 'VIP_BASIC', 'VIP_PREMIUM', 'VIP_ELITE', 'VIP'],
+      default: 'FREE'
+    },
+    vipTier: { type: String, default: '' },
+    status: { 
+      type: String, 
+      enum: ['UPCOMING', 'ACTIVE', 'LOCKED', 'COMPLETED', 'VOID', 'FAILED', 'pending', 'won', 'lost'], 
+      default: 'UPCOMING' 
+    },
+    source: { type: String, default: 'ESPN AI Engine' },
+    modelVersion: { type: String, default: 'v1.0' },
+    result: { type: String, default: '' },
+    settledAt: { type: Date },
     isPremium: { type: Boolean, default: false },
     planIds: [{ type: Schema.Types.ObjectId, ref: 'SubscriptionPlan' }],
-    result: { type: String, default: '' },
   },
   { timestamps: true }
 );
+
+// Compound index for preventing duplicate predictions for the same external fixture & prediction type
+TipSchema.index({ externalFixtureId: 1, predictionType: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model<ITip>('Tip', TipSchema);

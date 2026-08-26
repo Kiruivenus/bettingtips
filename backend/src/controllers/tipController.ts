@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import Tip from '../models/Tip';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
-// Reusable function to check if user has active premium
-const hasActivePremium = (req: AuthRequest): boolean => {
+// Reusable function to check if user has active premium subscription
+export const hasActivePremium = (req: AuthRequest): boolean => {
   if (!req.user) return false;
   if (req.user.role === 'admin') return true;
   if (req.user.subscriptionExpiry && new Date(req.user.subscriptionExpiry) > new Date()) {
@@ -12,20 +12,37 @@ const hasActivePremium = (req: AuthRequest): boolean => {
   return false;
 };
 
-// @desc    Get all tips
+// @desc    Get all tips with server-side VIP entitlement & 3 free tips/day enforcement
 // @route   GET /api/tips
-// @access  Public (Premium details hidden if not subscribed)
+// @access  Public / Authenticated
 export const getTips = async (req: AuthRequest, res: Response) => {
   try {
     const tips = await Tip.find({}).sort({ matchDate: -1 }).populate('planIds', 'name');
     const isPremiumUser = hasActivePremium(req);
 
+    // Group free tips by date to enforce strict 3 per day server-side for non-premium users
+    const freeTipsCountByDate: Record<string, number> = {};
+
     const formattedTips = tips.map((tip) => {
       const tipObj = tip.toObject();
-      // Only hide prediction if it's premium, pending, and user is not premium
-      if (tipObj.isPremium && tipObj.status === 'pending' && !isPremiumUser) {
-        tipObj.prediction = 'Hidden for non-premium users';
+      const dayKey = tipObj.matchDate ? new Date(tipObj.matchDate).toISOString().split('T')[0] : 'unknown';
+
+      const isFreeTip = !tipObj.isPremium || tipObj.accessLevel === 'FREE';
+
+      if (!isPremiumUser) {
+        if (isFreeTip) {
+          freeTipsCountByDate[dayKey] = (freeTipsCountByDate[dayKey] || 0) + 1;
+          // Enforce strict 3 free tips per day server-side
+          if (freeTipsCountByDate[dayKey] > 3) {
+            tipObj.prediction = 'Daily free prediction limit reached. Upgrade to VIP to access.';
+            tipObj.selection = 'Daily free prediction limit reached.';
+          }
+        } else if (tipObj.status === 'pending' || tipObj.status === 'UPCOMING' || tipObj.status === 'ACTIVE' || tipObj.status === 'LOCKED') {
+          tipObj.prediction = 'Requires active VIP subscription';
+          tipObj.selection = 'Requires active VIP subscription';
+        }
       }
+
       return tipObj;
     });
 
