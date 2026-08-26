@@ -28,7 +28,7 @@ export default function AdminMessagesPage() {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
-      setMessages(data);
+      if (Array.isArray(data)) setMessages(data);
     } catch { showToast('Error fetching messages', 'error'); }
     finally { setLoading(false); }
   };
@@ -59,78 +59,112 @@ export default function AdminMessagesPage() {
     finally { setProcessingId(null); }
   };
 
-  const unreadCount = messages.filter(m => !m.isRead).length;
-
   return (
-    <div className="animate-in fade-in duration-500 relative">
+    <div className="space-y-6">
+      
+      {/* Toast Alert */}
       {toast && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg border shadow-xl flex items-center ${toast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-          <span className="font-medium text-sm">{toast.message}</span>
+        <div className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded border shadow-lg text-xs font-medium ${
+          toast.type === 'success' ? 'bg-emerald-950 border-emerald-800 text-emerald-300' : 'bg-rose-950 border-rose-800 text-rose-300'
+        }`}>
+          {toast.message}
         </div>
       )}
 
-      <header className="sticky top-0 z-20 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 pb-6 pt-0 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 mb-8">
-        <div className="pt-6">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Contact Messages</h1>
-            {unreadCount > 0 && (
-              <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-bold bg-amber-500 text-white rounded-full">{unreadCount}</span>
-            )}
-          </div>
-          <p className="text-zinc-400">Messages submitted from the website landing page contact form.</p>
-        </div>
-      </header>
+      {/* Header */}
+      <div className="border-b border-zinc-800 pb-4 space-y-1">
+        <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Communication Inbox</span>
+        <h1 className="text-2xl font-bold text-white tracking-tight">Customer Support Inquiries</h1>
+        <p className="text-xs text-zinc-400">Review and resolve messages submitted via contact desk.</p>
+      </div>
 
-      {loading ? (
-        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-20 bg-white/5 animate-pulse rounded-xl" />)}</div>
-      ) : messages.length === 0 ? (
-        <div className="text-center py-20 bg-white/5 border border-white/10 rounded-2xl">
-          <h2 className="text-xl font-bold text-white mb-2">No messages yet</h2>
-          <p className="text-zinc-400">Contact form submissions from the landing page will appear here.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {messages.map(msg => (
-            <div key={msg._id} className={`border rounded-xl overflow-hidden transition-all ${!msg.isRead ? 'bg-amber-500/5 border-amber-500/20' : 'bg-black/20 border-white/5'}`}>
-              <div className="flex items-center justify-between p-4 cursor-pointer" onClick={() => setExpandedId(expandedId === msg._id ? null : msg._id)}>
-                <div className="flex items-center gap-3">
-                  {!msg.isRead && <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />}
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-white text-sm">{msg.name}</span>
-                      <span className="text-zinc-500 text-xs">&lt;{msg.email}&gt;</span>
-                    </div>
-                    <p className={`text-xs truncate max-w-md ${msg.isRead ? 'text-zinc-500' : 'text-zinc-300'}`}>{msg.message}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 shrink-0 ml-4">
-                  <span className="text-[10px] text-zinc-500">{new Date(msg.createdAt).toLocaleDateString()}</span>
-                  <svg className={`w-4 h-4 text-zinc-500 transition-transform ${expandedId === msg._id ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </div>
-              </div>
+      {/* Table */}
+      <div className="bg-zinc-900 rounded-lg border border-zinc-800 overflow-hidden font-numeric">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-zinc-800 bg-zinc-950 text-zinc-400 uppercase tracking-wider text-[10px] font-semibold">
+                <th className="py-3 px-4">Sender Details</th>
+                <th className="py-3 px-4">Message Snippet</th>
+                <th className="py-3 px-4 text-center">Status</th>
+                <th className="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/60">
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-zinc-500">Loading inbox messages...</td>
+                </tr>
+              ) : messages.length > 0 ? (
+                messages.map((m) => (
+                  <React.Fragment key={m._id}>
+                    <tr className="hover:bg-zinc-800/40 transition-colors">
+                      <td className="py-3 px-4">
+                        <span className="block font-semibold text-zinc-100">{m.name}</span>
+                        <span className="text-[11px] text-zinc-500">{m.email} • {new Date(m.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                      </td>
+                      <td className="py-3 px-4 text-zinc-300 max-w-xs truncate">
+                        {m.message}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {m.isRead ? (
+                          <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 text-[10px]">
+                            READ
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800/60 font-bold text-[10px]">
+                            NEW
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-right space-x-2">
+                        <button
+                          onClick={() => {
+                            setExpandedId(expandedId === m._id ? null : m._id);
+                            if (!m.isRead) markRead(m._id);
+                          }}
+                          className="text-xs text-zinc-400 hover:text-white transition-colors"
+                        >
+                          {expandedId === m._id ? 'Collapse' : 'Expand'}
+                        </button>
+                        <button
+                          onClick={() => deleteMessage(m._id)}
+                          disabled={processingId === m._id}
+                          className="text-xs text-rose-400 hover:text-rose-300 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
 
-              {expandedId === msg._id && (
-                <div className="px-4 pb-4 border-t border-white/5 pt-4">
-                  <p className="text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap mb-4">{msg.message}</p>
-                  <div className="flex gap-2">
-                    {!msg.isRead && (
-                      <button disabled={processingId === msg._id} onClick={() => markRead(msg._id)} className="text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-colors">
-                        Mark as Read
-                      </button>
+                    {expandedId === m._id && (
+                      <tr className="bg-zinc-950/80">
+                        <td colSpan={4} className="p-4 text-xs text-zinc-300 leading-relaxed border-b border-zinc-800">
+                          <div className="space-y-2">
+                            <span className="text-[10px] uppercase font-bold text-zinc-500 block">Full Inquiry Body:</span>
+                            <p className="bg-zinc-900 p-3 rounded border border-zinc-800 text-zinc-200 whitespace-pre-wrap">{m.message}</p>
+                            <a
+                              href={`mailto:${m.email}?subject=Re: Support Inquiry`}
+                              className="inline-block px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors"
+                            >
+                              Reply via Email →
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
                     )}
-                    <a href={`mailto:${msg.email}`} className="text-xs font-medium px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 transition-colors">
-                      Reply via Email
-                    </a>
-                    <button disabled={processingId === msg._id} onClick={() => deleteMessage(msg._id)} className="text-xs font-medium px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors ml-auto">
-                      Delete
-                    </button>
-                  </div>
-                </div>
+                  </React.Fragment>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-zinc-500">No support messages in inbox.</td>
+                </tr>
               )}
-            </div>
-          ))}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
+
     </div>
   );
 }

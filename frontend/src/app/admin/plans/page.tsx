@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/constants';
+import { Button } from '@/components/ui/Button';
 
 interface Plan {
   _id: string;
@@ -44,7 +45,7 @@ export default function AdminPlansPage() {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
-      setPlans(data);
+      if (Array.isArray(data)) setPlans(data);
     } catch (error) {
       showToast('Error fetching plans', 'error');
     } finally {
@@ -67,15 +68,23 @@ export default function AdminPlansPage() {
       setFormData({
         name: plan.name,
         price: plan.price.toString(),
-        currency: plan.currency,
+        currency: plan.currency || 'USD',
         durationInDays: plan.durationInDays.toString(),
-        features: plan.features.join(', '),
-        maxOdds: (plan.maxOdds || 0).toString(),
+        features: plan.features ? plan.features.join('\n') : '',
+        maxOdds: plan.maxOdds ? plan.maxOdds.toString() : '5.0',
         isActive: plan.isActive
       });
     } else {
       setCurrentPlan(null);
-      setFormData({ name: '', price: '', currency: 'USD', durationInDays: '', features: '', maxOdds: '', isActive: true });
+      setFormData({
+        name: '',
+        price: '',
+        currency: 'USD',
+        durationInDays: '30',
+        features: '',
+        maxOdds: '5.0',
+        isActive: true
+      });
     }
     setIsModalOpen(true);
   };
@@ -87,17 +96,14 @@ export default function AdminPlansPage() {
     const url = currentPlan 
       ? `${API_URL}/api/plans/${currentPlan._id}`
       : `${API_URL}/api/plans`;
-      
     const method = currentPlan ? 'PUT' : 'POST';
     
     const payload = {
-      name: formData.name,
+      ...formData,
       price: Number(formData.price),
-      currency: formData.currency,
       durationInDays: Number(formData.durationInDays),
-      features: formData.features.split(',').map(f => f.trim()).filter(f => f.length > 0),
-      maxOdds: Number(formData.maxOdds) || 0,
-      isActive: formData.isActive
+      maxOdds: Number(formData.maxOdds),
+      features: formData.features.split('\n').filter(f => f.trim() !== '')
     };
 
     try {
@@ -109,10 +115,9 @@ export default function AdminPlansPage() {
         },
         body: JSON.stringify(payload)
       });
-
       if (!res.ok) throw new Error('Failed to save plan');
 
-      showToast(currentPlan ? 'Plan updated successfully' : 'Plan created successfully', 'success');
+      showToast(currentPlan ? 'Plan updated' : 'Plan created', 'success');
       setIsModalOpen(false);
       fetchPlans();
     } catch (error) {
@@ -132,7 +137,7 @@ export default function AdminPlansPage() {
       });
       if (!res.ok) throw new Error('Failed to delete');
       
-      showToast('Plan deleted successfully', 'success');
+      showToast('Plan deleted', 'success');
       setIsDeleteModalOpen(false);
       fetchPlans();
     } catch (error) {
@@ -143,195 +148,191 @@ export default function AdminPlansPage() {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 relative">
-      {/* Toast Notification */}
+    <div className="space-y-6">
+      
+      {/* Toast Alert */}
       {toast && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg border shadow-xl flex items-center transition-all ${
-          toast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'
+        <div className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded border shadow-lg text-xs font-medium ${
+          toast.type === 'success' ? 'bg-emerald-950 border-emerald-800 text-emerald-300' : 'bg-rose-950 border-rose-800 text-rose-300'
         }`}>
-          <div className="mr-3">
-            {toast.type === 'success' ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            )}
-          </div>
-          <span className="font-medium text-sm">{toast.message}</span>
+          {toast.message}
         </div>
       )}
 
-      <header className="sticky top-0 z-20 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 pb-6 pt-0 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="pt-6">
-          <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Manage Plans</h1>
-          <p className="text-zinc-400">Create, edit, and configure subscription tiers.</p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+        <div className="space-y-1">
+          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Membership Options</span>
+          <h1 className="text-2xl font-bold text-white tracking-tight">VIP Subscription Packages</h1>
+          <p className="text-xs text-zinc-400">Configure duration, pricing, and feature access tiers.</p>
         </div>
-        <button 
-          onClick={() => handleOpenModal()}
-          className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] shrink-0"
-        >
-          <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-          Add New Plan
-        </button>
-      </header>
+        <Button variant="primary" size="sm" onClick={() => handleOpenModal()}>
+          + Create New Package
+        </Button>
+      </div>
 
-      {/* Main Content */}
-      {loading ? (
-        <div className="space-y-4">
-          {[1,2,3].map(i => <div key={i} className="h-20 bg-white/5 animate-pulse rounded-2xl border border-white/5" />)}
+      {/* Data Table */}
+      <div className="bg-zinc-900 rounded-lg border border-zinc-800 overflow-hidden font-numeric">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-zinc-800 bg-zinc-950 text-zinc-400 uppercase tracking-wider text-[10px] font-semibold">
+                <th className="py-3 px-4">Package Name</th>
+                <th className="py-3 px-4">Duration</th>
+                <th className="py-3 px-4 text-right">Price</th>
+                <th className="py-3 px-4 text-center">Status</th>
+                <th className="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/60">
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-zinc-500">Loading plan packages...</td>
+                </tr>
+              ) : plans.length > 0 ? (
+                plans.map((plan) => (
+                  <tr key={plan._id} className="hover:bg-zinc-800/40 transition-colors">
+                    <td className="py-3 px-4 font-semibold text-zinc-100">{plan.name}</td>
+                    <td className="py-3 px-4 text-zinc-300">{plan.durationInDays} Days</td>
+                    <td className="py-3 px-4 text-right font-bold text-emerald-400">${plan.price} {plan.currency}</td>
+                    <td className="py-3 px-4 text-center">
+                      {plan.isActive ? (
+                        <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 text-[10px] font-bold">
+                          ACTIVE
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 text-[10px]">
+                          DISABLED
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-right space-x-2">
+                      <button
+                        onClick={() => handleOpenModal(plan)}
+                        className="text-xs text-zinc-400 hover:text-white transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => { setCurrentPlan(plan); setIsDeleteModalOpen(true); }}
+                        className="text-xs text-rose-400 hover:text-rose-300 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-zinc-500">No subscription packages configured.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      ) : plans.length === 0 ? (
-        <div className="text-center py-20 px-4 bg-white/5 border border-white/10 rounded-2xl">
-          <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-          </div>
-          <h2 className="text-xl font-bold text-white mb-2">No plans yet</h2>
-          <p className="text-zinc-400 mb-6">You haven't created any subscription plans. Click 'Add Plan' to create one.</p>
-          <button onClick={() => handleOpenModal()} className="px-6 py-2.5 rounded-full bg-white/10 text-white font-medium hover:bg-white/20 transition-colors">
-            Configure First Plan
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {plans.map(plan => (
-            <div key={plan._id} className={`bg-black/20 border ${plan.isActive ? 'border-amber-500/20' : 'border-white/5'} rounded-2xl p-6 relative overflow-hidden flex flex-col`}>
-              {plan.isActive && <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl -mr-10 -mt-10" />}
-              
-              <div className="flex justify-between items-start mb-4 relative z-10">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-xl font-bold text-white">{plan.name}</h3>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${plan.isActive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20'}`}>
-                      {plan.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  <div className="text-2xl font-extrabold text-amber-400">
-                    {plan.currency} {plan.price}
-                    <span className="text-sm text-zinc-500 font-medium ml-1">/ {plan.durationInDays} days</span>
-                  </div>
-                  {plan.maxOdds > 0 && (
-                    <div className="text-xs text-emerald-400 font-bold mt-1">Up to {plan.maxOdds} odds included</div>
-                  )}
-                </div>
-              </div>
+      </div>
 
-              <div className="flex-1 mb-6 relative z-10">
-                <ul className="space-y-2">
-                  {plan.features.slice(0, 4).map((f, i) => (
-                    <li key={i} className="flex items-start text-sm text-zinc-300">
-                      <svg className="w-4 h-4 text-amber-500 mr-2 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      {f}
-                    </li>
-                  ))}
-                  {plan.features.length > 4 && (
-                    <li className="text-xs text-zinc-500 italic">+{plan.features.length - 4} more features</li>
-                  )}
-                </ul>
-              </div>
-
-              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-white/5 relative z-10">
-                <button 
-                  onClick={() => handleOpenModal(plan)}
-                  className="flex-1 bg-white/5 hover:bg-white/10 text-white text-sm font-medium py-2 rounded-xl border border-white/10 transition-colors"
-                >
-                  Edit
-                </button>
-                <button 
-                  onClick={() => { setCurrentPlan(plan); setIsDeleteModalOpen(true); }}
-                  className="flex-none p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Add/Edit Modal */}
+      {/* Edit / Create Form Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !submitting && setIsModalOpen(false)} />
-          <div className="relative bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-white/5 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-white">{currentPlan ? 'Edit Configuration' : 'Create New Plan'}</h3>
-              <button disabled={submitting} onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-white transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Plan Name</label>
-                  <input required type="text" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-amber-500/50" 
-                    value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. VIP Access" />
-                </div>
-                
-                <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Price</label>
-                  <input required type="number" step="0.01" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-amber-500/50" 
-                    value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="0.00" />
-                </div>
-                
-                <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Duration (Days)</label>
-                  <input required type="number" min="1" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-amber-500/50" 
-                    value={formData.durationInDays} onChange={e => setFormData({...formData, durationInDays: e.target.value})} placeholder="30" />
-                </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto text-xs">
+            <h3 className="text-base font-bold text-white">
+              {currentPlan ? 'Edit Plan Package' : 'Create Plan Package'}
+            </h3>
 
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div>
+                <label className="block text-zinc-300 font-medium mb-1">Package Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g. VIP Monthly Access"
+                  className="w-full h-9 rounded bg-zinc-950 border border-zinc-800 px-3 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Max Odds Included</label>
-                  <input type="number" min="0" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-amber-500/50" 
-                    value={formData.maxOdds} onChange={e => setFormData({...formData, maxOdds: e.target.value})} placeholder="e.g. 50" />
+                  <label className="block text-zinc-300 font-medium mb-1">Price (USD) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    placeholder="29.99"
+                    className="w-full h-9 rounded bg-zinc-950 border border-zinc-800 px-3 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500 font-numeric"
+                  />
                 </div>
-
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Features (comma separated)</label>
-                  <textarea required rows={3} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-amber-500/50 resize-none" 
-                    value={formData.features} onChange={e => setFormData({...formData, features: e.target.value})} placeholder="Daily picks, 90% Win rate, Premium support..." />
-                </div>
-
-                <div className="col-span-2 flex items-center mt-2">
-                  <input type="checkbox" id="isActive" className="w-4 h-4 rounded bg-black/40 border-white/10 text-amber-500 focus:ring-amber-500 focus:ring-offset-zinc-900" 
-                    checked={formData.isActive} onChange={e => setFormData({...formData, isActive: e.target.checked})} />
-                  <label htmlFor="isActive" className="ml-2 text-sm text-zinc-300">Plan is active and visible to users</label>
+                <div>
+                  <label className="block text-zinc-300 font-medium mb-1">Duration (Days) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.durationInDays}
+                    onChange={(e) => setFormData({ ...formData, durationInDays: e.target.value })}
+                    placeholder="30"
+                    className="w-full h-9 rounded bg-zinc-950 border border-zinc-800 px-3 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500 font-numeric"
+                  />
                 </div>
               </div>
 
-              <div className="mt-8 flex justify-end gap-3">
-                <button type="button" disabled={submitting} onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 rounded-xl font-medium text-zinc-300 hover:bg-white/5 transition-colors">
+              <div>
+                <label className="block text-zinc-300 font-medium mb-1">Package Features (One per line)</label>
+                <textarea
+                  rows={4}
+                  value={formData.features}
+                  onChange={(e) => setFormData({ ...formData, features: e.target.value })}
+                  placeholder="Daily High Odds Picks&#10;Instant SMS & Email Alert&#10;24/7 Analyst Support"
+                  className="w-full rounded bg-zinc-950 border border-zinc-800 p-2.5 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500 resize-none"
+                />
+              </div>
+
+              <div className="flex items-center gap-4 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.isActive}
+                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    className="rounded border-zinc-800 bg-zinc-950 text-emerald-500 focus:ring-0"
+                  />
+                  <span className="text-zinc-200 font-semibold">Active & Available for Purchase</span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-zinc-800">
+                <Button type="button" variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>
                   Cancel
-                </button>
-                <button type="submit" disabled={submitting} className="flex items-center justify-center px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold transition-all disabled:opacity-50">
-                  {submitting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" /> : null}
-                  Save Plan
-                </button>
+                </Button>
+                <Button type="submit" variant="primary" size="sm" isLoading={submitting}>
+                  Save Package
+                </Button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {isDeleteModalOpen && currentPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !submitting && setIsDeleteModalOpen(false)} />
-          <div className="relative bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-sm p-6 text-center animate-in zoom-in-95 duration-200">
-            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-            </div>
-            <h3 className="text-lg font-bold text-white mb-2">Delete Plan?</h3>
-            <p className="text-zinc-400 text-sm mb-6">Are you sure you want to permanently remove "{currentPlan.name}"? This action cannot be undone.</p>
-            <div className="flex gap-3">
-              <button disabled={submitting} onClick={() => setIsDeleteModalOpen(false)} className="flex-1 py-2.5 rounded-xl font-medium bg-white/5 text-zinc-300 hover:bg-white/10 transition-colors">Cancel</button>
-              <button disabled={submitting} onClick={handleDelete} className="flex-1 py-2.5 rounded-xl font-bold bg-red-500 text-white hover:bg-red-600 transition-colors flex items-center justify-center">
-                {submitting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" /> : null}
-                Delete
-              </button>
+      {/* Delete Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 w-full max-w-sm space-y-4 text-xs">
+            <h3 className="text-base font-bold text-white">Confirm Deletion</h3>
+            <p className="text-zinc-400">Are you sure you want to delete this subscription package?</p>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setIsDeleteModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="danger" size="sm" onClick={handleDelete} isLoading={submitting}>
+                Delete Package
+              </Button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }

@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import { Button } from '@/components/ui/Button';
 import { API_URL } from '@/lib/constants';
 
 interface Tip {
@@ -21,7 +23,8 @@ interface Tip {
 export default function FreeTipsPage() {
   const [tips, setTips] = useState<Tip[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedLeague, setSelectedLeague] = useState('all');
 
   useEffect(() => {
     const fetchTips = async () => {
@@ -31,202 +34,193 @@ export default function FreeTipsPage() {
           const data = await res.json();
           if (Array.isArray(data)) setTips(data.filter((t: Tip) => !t.isPremium));
         }
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchTips();
   }, []);
 
-  const pendingTips = tips.filter(t => t.status === 'pending');
-  const pastTips = tips
-    .filter(t => t.status === 'won' || t.status === 'lost')
-    .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
+  const leagues = Array.from(new Set(tips.map(t => t.league))).filter(Boolean);
 
-  const totalResolved = pastTips.length;
-  const wins = pastTips.filter(t => t.status === 'won').length;
-  const successRate = totalResolved > 0 ? Math.round((wins / totalResolved) * 100) : 0;
+  const filteredTips = tips.filter(tip => {
+    const matchesSearch = tip.match.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          tip.league.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          tip.prediction.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLeague = selectedLeague === 'all' || tip.league === selectedLeague;
+    return matchesSearch && matchesLeague;
+  });
+
+  const pendingTips = filteredTips.filter(t => t.status === 'pending');
+  const settledTips = filteredTips.filter(t => t.status !== 'pending');
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans overflow-x-hidden">
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 w-full z-[100] border-b border-white/5 bg-black/60 backdrop-blur-xl transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.png" alt="Platinum Picks" width={36} height={36} className="rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
-            <span className="text-xl font-extrabold text-white">Platinum Picks</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <Link href="/free-tips" className="text-emerald-400">Free Tips</Link>
-            <Link href="/buy-tips" className="hover:text-white transition-colors">Buy Tips</Link>
-            <Link href="/results" className="hover:text-white transition-colors">Results</Link>
-            <Link href="/support" className="hover:text-white transition-colors">Support</Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm font-medium text-zinc-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 hidden md:block">Sign In</Link>
-            <Link href="/register" className="text-sm font-bold text-black bg-emerald-400 hover:bg-emerald-300 px-5 py-2 rounded-xl transition-colors">Join Free</Link>
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2 text-zinc-400 hover:text-white">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} /></svg>
-            </button>
-          </div>
-        </div>
-        {mobileMenuOpen && (
-          <div className="md:hidden absolute top-[100%] left-0 w-full bg-black/95 border-b border-white/5 px-4 py-4 space-y-2 text-sm font-medium shadow-2xl">
-            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Home</Link>
-            <Link href="/free-tips" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-emerald-400 hover:bg-white/5">Free Tips</Link>
-            <Link href="/buy-tips" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Buy Tips</Link>
-            <Link href="/results" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Results</Link>
-            <Link href="/support" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Support</Link>
-            <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Sign In</Link>
-          </div>
-        )}
-      </nav>
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">
+      <Navbar />
 
-      {/* Hero */}
-      <section className="pt-28 pb-12 px-4 text-center relative overflow-hidden">
-        <div className="absolute top-0 right-[-5%] w-[50%] h-[60%] rounded-full bg-blue-500/8 blur-[130px] pointer-events-none" />
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-4">
-          🎁 No subscription required
-        </div>
-        <h1 className="text-4xl md:text-5xl font-extrabold mb-3 tracking-tight">Free Football Tips</h1>
-        <p className="text-zinc-400 text-lg max-w-xl mx-auto mb-8">Expert football predictions, verified results, and a fully transparent track record — all completely free.</p>
-
-        {/* Stats */}
-        <div className="flex flex-wrap justify-center gap-6 mb-2">
-          <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-center min-w-[120px]">
-            <div className="text-3xl font-extrabold text-emerald-400">{successRate}%</div>
-            <div className="text-xs text-zinc-500 font-medium uppercase tracking-wider mt-1">Success Rate</div>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-center min-w-[120px]">
-            <div className="text-3xl font-extrabold text-blue-400">{wins}</div>
-            <div className="text-xs text-zinc-500 font-medium uppercase tracking-wider mt-1">Wins</div>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-center min-w-[120px]">
-            <div className="text-3xl font-extrabold text-red-400">{totalResolved - wins}</div>
-            <div className="text-xs text-zinc-500 font-medium uppercase tracking-wider mt-1">Losses</div>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-center min-w-[120px]">
-            <div className="text-3xl font-extrabold text-white">{totalResolved}</div>
-            <div className="text-xs text-zinc-500 font-medium uppercase tracking-wider mt-1">Total Tips</div>
-          </div>
-        </div>
-      </section>
-
-      {/* Today's Free Tips */}
-      <section className="py-12 px-4 border-t border-white/5">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-extrabold text-white mb-2">Today's Picks</h2>
-          <p className="text-zinc-500 text-sm mb-8">Active predictions for upcoming matches.</p>
-          {loading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">{[1,2,3].map(i => <div key={i} className="h-48 bg-white/5 animate-pulse rounded-2xl" />)}</div>
-          ) : pendingTips.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pendingTips.map(tip => (
-                <div key={tip._id} className="bg-zinc-900/80 border border-white/10 rounded-2xl p-5 hover:border-emerald-500/30 hover:-translate-y-1 transition-all duration-300">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 px-2 py-1 rounded-lg">{tip.league}</span>
-                    <span className="text-[10px] text-zinc-500 font-medium">
-                      {new Date(tip.matchDate).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
-                    </span>
-                  </div>
-                  <h3 className="text-sm font-bold text-white mb-4 leading-tight">{tip.match}</h3>
-                  <div className="bg-black/40 rounded-xl p-3 border border-white/5 flex justify-between items-center">
-                    <div>
-                      <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Prediction</p>
-                      <p className="text-sm font-bold text-emerald-400">{tip.prediction}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Odds</p>
-                      <div className="bg-white/10 px-3 py-1 rounded-lg">
-                        <span className="text-sm font-extrabold text-white">{tip.odds.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+      <main className="flex-1 pt-20 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          
+          {/* Header & Controls */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-zinc-800 pb-6">
+            <div className="space-y-1">
+              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Open Analytics</span>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Free Football Predictions</h1>
+              <p className="text-xs text-zinc-400">Daily selections evaluated by our analytical team with verified outcomes.</p>
             </div>
-          ) : (
-            <div className="text-center py-16 bg-white/3 border border-white/10 rounded-2xl">
-              <p className="text-zinc-400">No active free tips right now. Check back soon!</p>
-            </div>
-          )}
-        </div>
-      </section>
 
-      {/* Past Results */}
-      <section className="py-12 px-4 border-t border-white/5 bg-black/20">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-            <div>
-              <h2 className="text-2xl font-extrabold text-white mb-2">Past Results & Archive</h2>
-              <p className="text-zinc-500 text-sm">Full transparent history of all free tips. We never hide losses.</p>
-            </div>
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2">
-              <span className="text-xs text-zinc-400">Overall:</span>
-              <span className={`text-sm font-extrabold ${successRate >= 60 ? 'text-emerald-400' : 'text-red-400'}`}>{successRate}% win rate</span>
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <input
+                type="text"
+                placeholder="Filter by team or league..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-9 w-full sm:w-64 rounded-md bg-zinc-900 border border-zinc-800 px-3 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500"
+              />
+              <select
+                value={selectedLeague}
+                onChange={(e) => setSelectedLeague(e.target.value)}
+                className="h-9 w-full sm:w-48 rounded-md bg-zinc-900 border border-zinc-800 px-3 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500"
+              >
+                <option value="all">All Leagues</option>
+                {leagues.map(league => (
+                  <option key={league} value={league}>{league}</option>
+                ))}
+              </select>
             </div>
           </div>
 
-          {loading ? (
-            <div className="space-y-3">{[1,2,3,4,5].map(i => <div key={i} className="h-16 bg-white/5 animate-pulse rounded-xl" />)}</div>
-          ) : pastTips.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="py-3 px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Date</th>
-                    <th className="py-3 px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Match</th>
-                    <th className="py-3 px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">League</th>
-                    <th className="py-3 px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Prediction</th>
-                    <th className="py-3 px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Odds</th>
-                    <th className="py-3 px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider text-center">Result</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pastTips.map(tip => (
-                    <tr key={tip._id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
-                      <td className="py-3 px-4 text-xs text-zinc-400 whitespace-nowrap">
-                        {new Date(tip.matchDate).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })}
-                      </td>
-                      <td className="py-3 px-4 text-sm font-semibold text-white">{tip.match}</td>
-                      <td className="py-3 px-4 text-xs text-zinc-400">{tip.league}</td>
-                      <td className="py-3 px-4 text-sm text-zinc-300">{tip.prediction}</td>
-                      <td className="py-3 px-4 text-sm font-bold text-white">{tip.odds.toFixed(2)}</td>
-                      <td className="py-3 px-4 text-center">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-lg ${
-                          tip.status === 'won'
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                        }`}>
-                          {tip.status === 'won' ? '✓ Win' : '✗ Loss'}
-                        </span>
-                      </td>
+          {/* Active Pending Predictions */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Upcoming Fixtures ({pendingTips.length})
+              </h2>
+            </div>
+
+            <div className="bg-zinc-900/90 rounded-lg border border-zinc-800 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse font-numeric">
+                  <thead>
+                    <tr className="border-b border-zinc-800 bg-zinc-950 text-zinc-400 uppercase tracking-wider text-[10px] font-semibold">
+                      <th className="py-3 px-4">Kickoff / League</th>
+                      <th className="py-3 px-4">Fixture</th>
+                      <th className="py-3 px-4">Predicted Selection</th>
+                      <th className="py-3 px-4 text-right">Odds</th>
+                      <th className="py-3 px-4 text-center">Confidence</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-zinc-500">
+                          Fetching open picks...
+                        </td>
+                      </tr>
+                    ) : pendingTips.length > 0 ? (
+                      pendingTips.map((tip) => (
+                        <tr key={tip._id} className="hover:bg-zinc-800/40 transition-colors">
+                          <td className="py-3 px-4">
+                            <span className="block text-zinc-300 font-medium">{tip.league}</span>
+                            <span className="text-[11px] text-zinc-500">
+                              {new Date(tip.matchDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-zinc-100">{tip.match}</td>
+                          <td className="py-3 px-4">
+                            <span className="px-2.5 py-1 rounded bg-zinc-800 text-emerald-400 border border-zinc-700 font-medium">
+                              {tip.prediction}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right font-bold text-emerald-400">
+                            {tip.odds.toFixed(2)}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <span className="px-2 py-0.5 rounded bg-zinc-950 text-zinc-400 border border-zinc-800 text-[10px]">
+                              {tip.confidence ? `${tip.confidence}%` : 'Standard'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-zinc-500">
+                          No pending free predictions matching criteria.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          ) : (
-            <div className="text-center py-16 border border-white/5 rounded-2xl text-zinc-500">
-              No past results yet. Results appear here once tips are resolved.
+          </div>
+
+          {/* Settled Predictions Feed */}
+          <div className="space-y-4 pt-6">
+            <div className="border-b border-zinc-800 pb-2">
+              <h2 className="text-sm font-bold text-zinc-200 uppercase tracking-wider">Recently Settled Picks</h2>
             </div>
-          )}
+
+            <div className="bg-zinc-900/90 rounded-lg border border-zinc-800 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse font-numeric">
+                  <thead>
+                    <tr className="border-b border-zinc-800 bg-zinc-950 text-zinc-400 uppercase tracking-wider text-[10px] font-semibold">
+                      <th className="py-3 px-4">Date / League</th>
+                      <th className="py-3 px-4">Fixture</th>
+                      <th className="py-3 px-4">Selection</th>
+                      <th className="py-3 px-4 text-right">Odds</th>
+                      <th className="py-3 px-4 text-center">Result</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-zinc-500">Loading history...</td>
+                      </tr>
+                    ) : settledTips.length > 0 ? (
+                      settledTips.map((tip) => (
+                        <tr key={tip._id} className="hover:bg-zinc-800/40 transition-colors">
+                          <td className="py-3 px-4">
+                            <span className="block text-zinc-300 font-medium">{tip.league}</span>
+                            <span className="text-[11px] text-zinc-500">
+                              {new Date(tip.matchDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-medium text-zinc-200">{tip.match}</td>
+                          <td className="py-3 px-4 text-zinc-300">{tip.prediction}</td>
+                          <td className="py-3 px-4 text-right font-medium text-zinc-300">{tip.odds.toFixed(2)}</td>
+                          <td className="py-3 px-4 text-center">
+                            {tip.status === 'won' ? (
+                              <span className="px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-bold text-[10px]">
+                                WON
+                              </span>
+                            ) : (
+                              <span className="px-2.5 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800/60 font-bold text-[10px]">
+                                LOST
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-zinc-500">No settled predictions logged yet.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
         </div>
-      </section>
+      </main>
 
-      {/* CTA */}
-      <section className="py-16 px-4 border-t border-white/5 text-center">
-        <h2 className="text-2xl font-extrabold text-white mb-3">Want Higher Odds & More Picks?</h2>
-        <p className="text-zinc-400 mb-8 max-w-lg mx-auto">Our premium plans give you access to exclusive VIP tips with higher odds and up to 70+ picks per plan.</p>
-        <Link href="/buy-tips" className="inline-flex items-center justify-center h-12 px-8 text-base font-bold text-black bg-emerald-400 hover:bg-emerald-300 rounded-2xl transition-all shadow-[0_0_25px_rgba(52,211,153,0.3)]">
-          View Premium Plans →
-        </Link>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/5 bg-black py-8 px-6 text-center">
-        <p className="text-zinc-600 text-sm">© 2015–2026 Platinum Picks. All rights reserved. Bet responsibly. 18+</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

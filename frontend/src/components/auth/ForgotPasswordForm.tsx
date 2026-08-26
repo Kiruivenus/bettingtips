@@ -26,17 +26,11 @@ export const ForgotPasswordForm: React.FC = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        throw new Error(data.message || 'Error sending password reset email.');
       }
 
       setStatus('success');
       setMessage(data.message);
-      
-      // In development, the token is returned in the response
-      if (data.resetToken) {
-        console.log('Reset Token (Dev only):', data.resetToken);
-        console.log('Reset URL (Dev only):', data.resetUrl);
-      }
     } catch (err: any) {
       setStatus('error');
       setMessage(err.message);
@@ -45,21 +39,16 @@ export const ForgotPasswordForm: React.FC = () => {
 
   if (status === 'success') {
     return (
-      <div className="text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
-        <div className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(16,185,129,0.1)]">
-          <svg className="w-10 h-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
-        </div>
-        <div className="space-y-2">
-          <h3 className="text-xl font-bold text-white">Check Your Email</h3>
-          <p className="text-zinc-400 text-sm leading-relaxed max-w-xs mx-auto">
-            If an account exists for <span className="text-white font-medium">{email}</span>, we've sent instructions to reset your password.
+      <div className="space-y-4">
+        <div className="p-4 rounded bg-emerald-950/80 border border-emerald-800/60 text-xs text-emerald-300 space-y-1">
+          <p className="font-semibold">Reset Link Transmitted</p>
+          <p className="text-emerald-400/90 leading-relaxed">
+            If an account exists for <span className="font-bold">{email}</span>, a password reset link has been dispatched to your inbox.
           </p>
         </div>
-        <div className="pt-4">
-          <Link href="/login" className="text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
-            Back to Sign In
+        <div className="pt-2 text-center">
+          <Link href="/login" className="text-xs font-semibold text-emerald-400 hover:underline">
+            Return to Sign In
           </Link>
         </div>
       </div>
@@ -67,37 +56,38 @@ export const ForgotPasswordForm: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <form onSubmit={handleSubmit} className="space-y-5">
+    <div className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {status === 'error' && (
-          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-medium flex items-center gap-3 animate-shake">
-            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <div className="p-3 rounded bg-rose-950/80 border border-rose-800/60 text-rose-300 text-xs font-medium">
             {message}
           </div>
         )}
 
         <Input
-          label="Email Address"
+          label="Registered Email Address"
           type="email"
-          placeholder="name@company.com"
+          placeholder="name@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          leftIcon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206" /></svg>}
         />
 
         <Button 
           type="submit" 
-          className="w-full text-base font-bold h-12 shadow-lg hover:translate-y-[-1px] active:translate-y-[1px]" 
+          variant="primary"
+          size="md"
+          className="w-full" 
           isLoading={status === 'loading'}
         >
-          Send Reset Link
+          Send Password Reset Instructions
         </Button>
       </form>
 
-      <div className="text-center">
-        <Link href="/login" className="text-sm font-bold text-zinc-500 hover:text-white transition-colors">
-          Remember your password? <span className="text-emerald-400">Sign In</span>
+      <div className="pt-4 border-t border-zinc-800 text-center text-xs text-zinc-400">
+        Remember your credentials?{' '}
+        <Link href="/login" className="text-emerald-400 font-semibold hover:underline">
+          Sign In
         </Link>
       </div>
     </div>

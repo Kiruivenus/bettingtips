@@ -13,8 +13,7 @@ export const RegisterForm: React.FC = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    referralCode: ''
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -64,11 +63,10 @@ export const RegisterForm: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-medium flex items-center gap-3 animate-shake">
-            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <div className="p-3 rounded bg-rose-950/80 border border-rose-800/60 text-rose-300 text-xs font-medium">
             {error}
           </div>
         )}
@@ -80,18 +78,16 @@ export const RegisterForm: React.FC = () => {
           value={formData.name}
           onChange={handleChange}
           required
-          leftIcon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>}
         />
 
         <Input
           label="Email Address"
           name="email"
           type="email"
-          placeholder="name@company.com"
+          placeholder="name@example.com"
           value={formData.email}
           onChange={handleChange}
           required
-          leftIcon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
         />
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -99,45 +95,32 @@ export const RegisterForm: React.FC = () => {
             label="Password"
             name="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="Min 6 characters"
             value={formData.password}
             onChange={handleChange}
             required
-            leftIcon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>}
           />
           <Input
-            label="Confirm"
+            label="Confirm Password"
             name="confirmPassword"
             type="password"
-            placeholder="••••••••"
+            placeholder="Repeat password"
             value={formData.confirmPassword}
             onChange={handleChange}
             required
-            leftIcon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>}
           />
         </div>
 
-        <Input
-          label="Referral Code (Optional)"
-          name="referralCode"
-          placeholder="e.g. VIP2026"
-          value={formData.referralCode}
-          onChange={handleChange}
-          leftIcon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>}
-        />
-
-        <Button type="submit" className="w-full h-12 !mt-8 text-base font-bold shadow-lg hover:translate-y-[-1px] active:translate-y-[1px]" isLoading={isLoading}>
-          Create Secure Account
+        <Button type="submit" variant="primary" size="md" className="w-full" isLoading={isLoading}>
+          Create Account
         </Button>
       </form>
 
-      <div className="text-center pb-2">
-        <p className="text-sm text-zinc-500 font-medium tracking-wide">
-          Already a member?{' '}
-          <Link href="/login" className="text-emerald-400 font-bold hover:text-emerald-300 hover:underline underline-offset-4 decoration-2 transition-all">
-            Access your feed
-          </Link>
-        </p>
+      <div className="pt-4 border-t border-zinc-800 text-center text-xs text-zinc-400">
+        Already have an account?{' '}
+        <Link href="/login" className="text-emerald-400 font-semibold hover:underline">
+          Sign In
+        </Link>
       </div>
     </div>
   );

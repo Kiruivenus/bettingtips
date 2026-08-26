@@ -20,6 +20,7 @@ export default function AdminPaymentsPage() {
   const { user } = useAuth();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   
   const [toast, setToast] = useState<{message: string, type: 'success'|'error'} | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -31,8 +32,9 @@ export default function AdminPaymentsPage() {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
-      // Sort newest first
-      setPayments(data.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      if (Array.isArray(data)) {
+        setPayments(data.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      }
     } catch (error) {
       showToast('Error fetching payments', 'error');
     } finally {
@@ -58,7 +60,7 @@ export default function AdminPaymentsPage() {
       });
       if (!res.ok) throw new Error(`Failed to ${action}`);
       
-      showToast(`Payment ${action}d successfully`, 'success');
+      showToast(`Payment ${action === 'approve' ? 'approved' : 'declined'} successfully`, 'success');
       fetchPayments();
     } catch (error) {
       showToast(`Failed to ${action} payment`, 'error');
@@ -67,138 +69,121 @@ export default function AdminPaymentsPage() {
     }
   };
 
+  const filteredPayments = payments.filter(p => filterStatus === 'all' || p.status === filterStatus);
+
   return (
-    <div className="animate-in fade-in duration-500 relative">
-      {/* Toast Notification */}
+    <div className="space-y-6">
+      
+      {/* Toast Alert */}
       {toast && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg border shadow-xl flex items-center transition-all ${
-          toast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'
+        <div className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded border shadow-lg text-xs font-medium ${
+          toast.type === 'success' ? 'bg-emerald-950 border-emerald-800 text-emerald-300' : 'bg-rose-950 border-rose-800 text-rose-300'
         }`}>
-          <div className="mr-3">
-            {toast.type === 'success' ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            )}
-          </div>
-          <span className="font-medium text-sm">{toast.message}</span>
+          {toast.message}
         </div>
       )}
 
-      <header className="sticky top-0 z-20 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 pb-6 pt-0 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 mb-8">
-        <div className="pt-6">
-          <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Manage Transactions</h1>
-          <p className="text-zinc-400">Review automated receipts and manually approve specific payment flows.</p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+        <div className="space-y-1">
+          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Financial Verification</span>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Payment Receipts & Subscriptions</h1>
+          <p className="text-xs text-zinc-400">Audit transaction references and authorize manual subscription requests.</p>
         </div>
-      </header>
 
-      {/* Main Content */}
-      {loading ? (
-        <div className="space-y-4">
-          {[1,2,3].map(i => <div key={i} className="h-16 bg-white/5 animate-pulse rounded-2xl border border-white/5" />)}
-        </div>
-      ) : payments.length === 0 ? (
-        <div className="text-center py-20 px-4 bg-white/5 border border-white/10 rounded-2xl">
-          <h2 className="text-xl font-bold text-white mb-2">No transactions</h2>
-          <p className="text-zinc-400 mb-6">No payments have been recorded in the platform yet.</p>
-        </div>
-      ) : (
-        <div className="bg-black/20 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-white/5 text-zinc-400 border-b border-white/10 text-xs uppercase tracking-wider">
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="h-9 w-full sm:w-40 rounded bg-zinc-900 border border-zinc-800 px-3 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500"
+        >
+          <option value="all">All Statuses</option>
+          <option value="pending">Pending Review</option>
+          <option value="completed">Completed</option>
+          <option value="declined">Declined</option>
+        </select>
+      </div>
+
+      {/* Table */}
+      <div className="bg-zinc-900 rounded-lg border border-zinc-800 overflow-hidden font-numeric">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-zinc-800 bg-zinc-950 text-zinc-400 uppercase tracking-wider text-[10px] font-semibold">
+                <th className="py-3 px-4">User Details</th>
+                <th className="py-3 px-4">Plan / Gateway</th>
+                <th className="py-3 px-4 text-right">Amount</th>
+                <th className="py-3 px-4 text-center">Status</th>
+                <th className="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/60">
+              {loading ? (
                 <tr>
-                  <th className="px-6 py-4 font-medium">Txn Details</th>
-                  <th className="px-6 py-4 font-medium">User</th>
-                  <th className="px-6 py-4 font-medium">Receipt Info</th>
-                  <th className="px-6 py-4 font-medium">Status / Method</th>
-                  <th className="px-6 py-4 font-medium text-right">Actions</th>
+                  <td colSpan={5} className="py-8 text-center text-zinc-500">Loading payment ledger...</td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 text-zinc-300">
-                {payments.map(p => (
-                  <tr key={p._id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-white mb-0.5">{p.currency} {p.amount}</div>
-                      <div className="text-xs text-zinc-500">{new Date(p.createdAt).toLocaleDateString()} {new Date(p.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+              ) : filteredPayments.length > 0 ? (
+                filteredPayments.map((p) => (
+                  <tr key={p._id} className="hover:bg-zinc-800/40 transition-colors">
+                    <td className="py-3 px-4">
+                      <span className="block font-semibold text-zinc-100">{p.user?.name || 'User'}</span>
+                      <span className="text-[11px] text-zinc-500">{p.user?.email || '-'} • {new Date(p.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                     </td>
-                    <td className="px-6 py-4">
-                      {p.user ? (
-                        <>
-                          <div className="font-bold text-zinc-300">{p.user.name}</div>
-                          <div className="text-[10px] text-zinc-500">{p.user.email}</div>
-                        </>
+                    <td className="py-3 px-4">
+                      <span className="block font-semibold text-zinc-200">{p.plan?.name || 'VIP Package'}</span>
+                      <span className="text-[11px] text-zinc-500 uppercase">Method: {p.method} • Ref: {p.transactionId || 'N/A'}</span>
+                    </td>
+                    <td className="py-3 px-4 text-right font-bold text-emerald-400">
+                      ${p.amount} {p.currency || 'USD'}
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      {p.status === 'completed' ? (
+                        <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-bold text-[10px]">
+                          COMPLETED
+                        </span>
+                      ) : p.status === 'declined' ? (
+                        <span className="px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800/60 font-bold text-[10px]">
+                          DECLINED
+                        </span>
                       ) : (
-                        <span className="text-zinc-500 italic">User removed</span>
+                        <span className="px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800/60 font-bold text-[10px]">
+                          PENDING
+                        </span>
                       )}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-amber-400 font-bold text-xs">{p.plan?.name || 'Unknown Plan'}</span>
-                        <span className="text-[10px] text-zinc-500 font-mono tracking-wider max-w-[150px] truncate" title={p.transactionId}>
-                          ID: {p.transactionId || '---'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-2 w-max">
-                        <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-bold uppercase
-                          ${p.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 
-                            p.status === 'declined' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
-                            'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
-                          {p.status}
-                        </span>
-                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-white/5 text-zinc-400 border border-white/10">
-                          {p.method === 'mpesa_manual' ? 'M-Pesa (Manual)' : 
-                           p.method === 'paypal_ff' ? 'PayPal F&F' : 
-                           p.method === 'till' ? 'M-Pesa Till' :
-                           p.method === 'airtel' ? 'Airtel Money' :
-                           p.method?.replace('_', ' ')}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {processingId === p._id ? (
-                        <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin inline-block mr-4" />
-                      ) : (
-                        <div className="flex items-center justify-end gap-2 text-xs">
-                          {p.status === 'pending' && (
-                            <button 
-                              onClick={() => handleAction(p._id, 'approve')}
-                              className="px-3 py-1.5 rounded-lg font-bold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.1)]"
-                            >
-                              Approve
-                            </button>
-                          )}
-                          {(p.status === 'pending' || p.status === 'completed') && (
-                            <button 
-                              onClick={() => {
-                                if (p.status === 'completed' && !confirm('Are you sure you want to REVERT this approved payment to DECLINED? The user will lose their active plan.')) return;
-                                handleAction(p._id, 'reject');
-                              }}
-                              className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${
-                                p.status === 'completed' 
-                                  ? 'bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 border-white/5 hover:border-red-500/20' 
-                                  : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20'
-                              }`}
-                              title={p.status === 'completed' ? 'Revert to Declined' : 'Reject'}
-                            >
-                              {p.status === 'completed' ? 'Revert' : 'Reject'}
-                            </button>
-                          )}
-                          {p.status === 'declined' && (
-                            <span className="text-[10px] text-zinc-500 italic uppercase">Processed</span>
-                          )}
+                    <td className="py-3 px-4 text-right">
+                      {p.status === 'pending' ? (
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => handleAction(p._id, 'approve')}
+                            disabled={processingId === p._id}
+                            className="px-2 py-1 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-400 border border-emerald-800 text-[10px] font-semibold transition-colors"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleAction(p._id, 'reject')}
+                            disabled={processingId === p._id}
+                            className="px-2 py-1 rounded bg-rose-950 hover:bg-rose-900 text-rose-400 border border-rose-800 text-[10px] font-semibold transition-colors"
+                          >
+                            Decline
+                          </button>
                         </div>
+                      ) : (
+                        <span className="text-zinc-500 text-[11px]">Resolved</span>
                       )}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-zinc-500">No payment records found.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
+
     </div>
   );
 }

@@ -7,7 +7,7 @@ interface CardProps {
 
 export const Card: React.FC<CardProps> = ({ children, className = '' }) => {
   return (
-    <div className={`bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden ${className}`}>
+    <div className={`bg-zinc-900/90 rounded-lg border border-zinc-800 overflow-hidden ${className}`}>
       {children}
     </div>
   );
@@ -15,7 +15,7 @@ export const Card: React.FC<CardProps> = ({ children, className = '' }) => {
 
 export const CardHeader: React.FC<CardProps> = ({ children, className = '' }) => {
   return (
-    <div className={`px-6 py-4 border-b border-slate-200 ${className}`}>
+    <div className={`px-5 py-4 border-b border-zinc-800/80 ${className}`}>
       {children}
     </div>
   );
@@ -23,7 +23,7 @@ export const CardHeader: React.FC<CardProps> = ({ children, className = '' }) =>
 
 export const CardTitle: React.FC<CardProps> = ({ children, className = '' }) => {
   return (
-    <h3 className={`text-lg font-semibold text-slate-900 ${className}`}>
+    <h3 className={`text-sm font-semibold text-zinc-100 ${className}`}>
       {children}
     </h3>
   );
@@ -31,7 +31,7 @@ export const CardTitle: React.FC<CardProps> = ({ children, className = '' }) => 
 
 export const CardContent: React.FC<CardProps> = ({ children, className = '' }) => {
   return (
-    <div className={`p-6 ${className}`}>
+    <div className={`p-5 ${className}`}>
       {children}
     </div>
   );
@@ -39,7 +39,7 @@ export const CardContent: React.FC<CardProps> = ({ children, className = '' }) =
 
 export const CardFooter: React.FC<CardProps> = ({ children, className = '' }) => {
   return (
-    <div className={`px-6 py-4 bg-slate-50 border-t border-slate-200 ${className}`}>
+    <div className={`px-5 py-3.5 bg-zinc-950/60 border-t border-zinc-800/80 ${className}`}>
       {children}
     </div>
   );

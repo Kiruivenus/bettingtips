@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/constants';
+import { Button } from '@/components/ui/Button';
 
 interface UserData {
   _id: string;
@@ -19,6 +20,7 @@ export default function AdminUsersPage() {
   const { user } = useAuth();
   const [usersList, setUsersList] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   
   const [toast, setToast] = useState<{message: string, type: 'success'|'error'} | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export default function AdminUsersPage() {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
-      setUsersList(data);
+      if (Array.isArray(data)) setUsersList(data);
     } catch (error) {
       showToast('Error fetching users', 'error');
     } finally {
@@ -58,22 +60,17 @@ export default function AdminUsersPage() {
         },
         body: JSON.stringify({ isBlocked: !currentStatus })
       });
-      if (!res.ok) throw new Error('Failed to update user');
-      
-      showToast(`User successfully ${!currentStatus ? 'blocked' : 'unblocked'}`, 'success');
-      setUsersList(usersList.map(u => u._id === userId ? { ...u, isBlocked: !currentStatus } : u));
+      if (!res.ok) throw new Error('Action failed');
+      showToast(`User ${!currentStatus ? 'blocked' : 'unblocked'} successfully`, 'success');
+      fetchUsers();
     } catch (error) {
-      showToast('Action failed', 'error');
+      showToast('Failed to update user status', 'error');
     } finally {
       setProcessingId(null);
     }
   };
 
   const toggleRole = async (userId: string, currentRole: string) => {
-    if (userId === user?._id) {
-      showToast('Cannot change your own role', 'error');
-      return;
-    }
     const newRole = currentRole === 'admin' ? 'user' : 'admin';
     setProcessingId(userId);
     try {
@@ -85,134 +82,134 @@ export default function AdminUsersPage() {
         },
         body: JSON.stringify({ role: newRole })
       });
-      if (!res.ok) throw new Error('Failed to update user role');
-      
-      showToast('User role updated successfully', 'success');
-      setUsersList(usersList.map(u => u._id === userId ? { ...u, role: newRole } : u));
+      if (!res.ok) throw new Error('Action failed');
+      showToast(`User role changed to ${newRole}`, 'success');
+      fetchUsers();
     } catch (error) {
-      showToast('Failed to change role', 'error');
+      showToast('Failed to update role', 'error');
     } finally {
       setProcessingId(null);
     }
   };
 
+  const filteredUsers = usersList.filter(u =>
+    u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="animate-in fade-in duration-500 relative">
-      {/* Toast Notification */}
+    <div className="space-y-6">
+      
+      {/* Toast Alert */}
       {toast && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg border shadow-xl flex items-center transition-all ${
-          toast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'
+        <div className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded border shadow-lg text-xs font-medium ${
+          toast.type === 'success' ? 'bg-emerald-950 border-emerald-800 text-emerald-300' : 'bg-rose-950 border-rose-800 text-rose-300'
         }`}>
-          <div className="mr-3">
-            {toast.type === 'success' ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            )}
-          </div>
-          <span className="font-medium text-sm">{toast.message}</span>
+          {toast.message}
         </div>
       )}
 
-      <header className="sticky top-0 z-20 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 pb-6 pt-0 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 mb-8">
-        <div className="pt-6">
-          <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Manage Users</h1>
-          <p className="text-zinc-400">View registered members, check subscriptions, and handle account statuses.</p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+        <div className="space-y-1">
+          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Account Directory</span>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Registered Platform Users</h1>
+          <p className="text-xs text-zinc-400">Manage user accounts, roles, block status, and active memberships.</p>
         </div>
-      </header>
+        <input
+          type="text"
+          placeholder="Filter by name or email..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="h-9 w-full sm:w-64 rounded bg-zinc-900 border border-zinc-800 px-3 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500"
+        />
+      </div>
 
-      {/* Main Content */}
-      {loading ? (
-        <div className="space-y-4">
-          {[1,2,3].map(i => <div key={i} className="h-16 bg-white/5 animate-pulse rounded-2xl border border-white/5" />)}
-        </div>
-      ) : usersList.length === 0 ? (
-        <div className="text-center py-20 px-4 bg-white/5 border border-white/10 rounded-2xl">
-          <h2 className="text-xl font-bold text-white mb-2">No users found</h2>
-          <p className="text-zinc-400 mb-6">There are no registered accounts in the system yet.</p>
-        </div>
-      ) : (
-        <div className="bg-black/20 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-white/5 text-zinc-400 border-b border-white/10 text-xs uppercase tracking-wider">
+      {/* Users Table */}
+      <div className="bg-zinc-900 rounded-lg border border-zinc-800 overflow-hidden font-numeric">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-zinc-800 bg-zinc-950 text-zinc-400 uppercase tracking-wider text-[10px] font-semibold">
+                <th className="py-3 px-4">User Details</th>
+                <th className="py-3 px-4">Role</th>
+                <th className="py-3 px-4">Active VIP Package</th>
+                <th className="py-3 px-4 text-center">Status</th>
+                <th className="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/60">
+              {loading ? (
                 <tr>
-                  <th className="px-6 py-4 font-medium">User Details</th>
-                  <th className="px-6 py-4 font-medium">Subscription</th>
-                  <th className="px-6 py-4 font-medium">Role</th>
-                  <th className="px-6 py-4 font-medium">Account Status</th>
-                  <th className="px-6 py-4 font-medium text-right">Actions</th>
+                  <td colSpan={5} className="py-8 text-center text-zinc-500">Loading user accounts...</td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 text-zinc-300">
-                {usersList.map(u => (
-                  <tr key={u._id} className="hover:bg-white/[0.02] transition-colors relative">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold uppercase shrink-0 mr-3">
-                          {u.name ? u.name.charAt(0) : 'U'}
-                        </div>
-                        <div>
-                          <div className="font-bold text-white mb-0.5">{u.name || 'Unknown User'}</div>
-                          <div className="text-xs text-zinc-500">{u.email || 'No email provided'}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {u.activePlan ? (
-                        <div className="flex flex-col gap-1">
-                          <span className="font-bold text-amber-400">{u.activePlan.name}</span>
-                          <span className="text-[10px] text-zinc-400">Expires: {new Date(u.subscriptionExpiry).toLocaleDateString()}</span>
-                        </div>
-                      ) : (
-                        <span className="text-zinc-500 text-xs font-medium bg-white/5 px-2 py-1 rounded">No Active Plan</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase
-                        ${u.role === 'admin' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
-                        {u.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase
-                        ${u.isBlocked ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
-                        {u.isBlocked ? 'Blocked' : 'Active'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {processingId === u._id ? (
-                        <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin inline-block mr-4" />
-                      ) : (
-                        <div className="flex items-center justify-end gap-2">
-                          <button 
-                            onClick={() => toggleRole(u._id, u.role)} 
-                            disabled={u._id === user?._id}
-                            className="text-xs font-medium px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                          >
-                            Make {u.role === 'admin' ? 'User' : 'Admin'}
-                          </button>
-                          <button 
-                            onClick={() => toggleBlockStatus(u._id, u.isBlocked)}
-                            disabled={u._id === user?._id} 
-                            className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-                              u.isBlocked 
-                                ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/20' 
-                                : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20'
-                            }`}
-                          >
-                            {u.isBlocked ? 'Unblock' : 'Block'}
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ) : filteredUsers.length > 0 ? (
+                filteredUsers.map((u) => {
+                  const isSubActive = u.subscriptionExpiry && new Date(u.subscriptionExpiry) > new Date();
+                  return (
+                    <tr key={u._id} className="hover:bg-zinc-800/40 transition-colors">
+                      <td className="py-3 px-4">
+                        <span className="block font-semibold text-zinc-100">{u.name || 'Unnamed User'}</span>
+                        <span className="text-[11px] text-zinc-500">{u.email}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        {u.role === 'admin' ? (
+                          <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-bold text-[10px]">
+                            ADMIN
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 text-[10px]">
+                            USER
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {isSubActive && u.activePlan ? (
+                          <span className="text-zinc-200 font-semibold">{u.activePlan.name}</span>
+                        ) : (
+                          <span className="text-zinc-500">None / Expired</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {u.isBlocked ? (
+                          <span className="px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800/60 font-bold text-[10px]">
+                            BLOCKED
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 text-[10px]">
+                            ACTIVE
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-right space-x-2">
+                        <button
+                          onClick={() => toggleRole(u._id, u.role)}
+                          disabled={processingId === u._id}
+                          className="text-xs text-zinc-400 hover:text-white transition-colors"
+                        >
+                          Role: {u.role === 'admin' ? 'Demote' : 'Promote'}
+                        </button>
+                        <button
+                          onClick={() => toggleBlockStatus(u._id, u.isBlocked)}
+                          disabled={processingId === u._id}
+                          className={`text-xs transition-colors ${u.isBlocked ? 'text-emerald-400 hover:text-emerald-300' : 'text-rose-400 hover:text-rose-300'}`}
+                        >
+                          {u.isBlocked ? 'Unblock' : 'Block'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-zinc-500">No user accounts found matching query.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
+
     </div>
   );
 }

@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import { Button } from '@/components/ui/Button';
 import { API_URL } from '@/lib/constants';
 import { useAuth } from '@/context/AuthContext';
 
@@ -21,7 +23,7 @@ export default function BuyTipsPage() {
   const { user } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -31,189 +33,154 @@ export default function BuyTipsPage() {
           const data = await res.json();
           if (Array.isArray(data)) setPlans(data.filter((p: Plan) => p.isActive));
         }
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchPlans();
   }, []);
 
-  // color schemes based on plan index
-  const colors = [
-    { border: 'border-blue-500/30', glow: 'bg-blue-500/5', badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20', btn: 'bg-blue-500 hover:bg-blue-600', accent: 'text-blue-400' },
-    { border: 'border-emerald-500/30', glow: 'bg-emerald-500/5', badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', btn: 'bg-emerald-500 hover:bg-emerald-600', accent: 'text-emerald-400' },
-    { border: 'border-amber-500/30', glow: 'bg-amber-500/5', badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20', btn: 'bg-amber-500 hover:bg-amber-600', accent: 'text-amber-400' },
-    { border: 'border-purple-500/30', glow: 'bg-purple-500/5', badge: 'bg-purple-500/10 text-purple-400 border-purple-500/20', btn: 'bg-purple-500 hover:bg-purple-600', accent: 'text-purple-400' },
-    { border: 'border-rose-500/30', glow: 'bg-rose-500/5', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/20', btn: 'bg-rose-500 hover:bg-rose-600', accent: 'text-rose-400' },
-  ];
-
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans overflow-x-hidden">
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 w-full z-[100] border-b border-white/5 bg-black/60 backdrop-blur-xl transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.png" alt="Platinum Picks" width={36} height={36} className="rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
-            <span className="text-xl font-extrabold text-white">Platinum Picks</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <Link href="/free-tips" className="hover:text-white transition-colors">Free Tips</Link>
-            <Link href="/buy-tips" className="text-emerald-400">Buy Tips</Link>
-            <Link href="/results" className="hover:text-white transition-colors">Results</Link>
-            <Link href="/support" className="hover:text-white transition-colors">Support</Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm font-medium text-zinc-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 hidden md:block">Sign In</Link>
-            <Link href="/register" className="text-sm font-bold text-black bg-emerald-400 hover:bg-emerald-300 px-5 py-2 rounded-xl transition-colors">Join Free</Link>
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2 text-zinc-400 hover:text-white">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} /></svg>
-            </button>
-          </div>
-        </div>
-        {mobileMenuOpen && (
-          <div className="md:hidden absolute top-[100%] left-0 w-full bg-black/95 border-b border-white/5 px-4 py-4 space-y-2 text-sm font-medium shadow-2xl">
-            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Home</Link>
-            <Link href="/free-tips" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Free Tips</Link>
-            <Link href="/buy-tips" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-emerald-400 hover:bg-white/5">Buy Tips</Link>
-            <Link href="/results" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Results</Link>
-            <Link href="/support" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Support</Link>
-            <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-zinc-300 hover:bg-white/5">Sign In</Link>
-          </div>
-        )}
-      </nav>
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">
+      <Navbar />
 
-      {/* Hero */}
-      <section className="pt-28 pb-14 px-4 text-center relative overflow-hidden">
-        <div className="absolute top-0 left-[-5%] w-[50%] h-[60%] rounded-full bg-emerald-500/8 blur-[130px] pointer-events-none" />
-        <div className="absolute bottom-0 right-[-5%] w-[40%] h-[50%] rounded-full bg-amber-500/5 blur-[120px] pointer-events-none" />
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm font-medium mb-4">
-          👑 Premium Predictions
-        </div>
-        <h1 className="text-4xl md:text-5xl font-extrabold mb-3 tracking-tight">Buy Football Betting Tips</h1>
-        <p className="text-zinc-400 text-lg max-w-2xl mx-auto mb-6">
-          Purchase verified predictions from expert tipsters. Each plan includes a set number of maximum odds. Choose your plan and start winning today.
-        </p>
-        <p className="text-zinc-500 text-sm max-w-lg mx-auto">
-          We accept Credit/Debit Cards, PayPal, M-Pesa, and manual payment. <Link href="/#contact" className="text-emerald-400 hover:text-emerald-300">Contact us</Link> for other options.
-        </p>
-      </section>
+      <main className="flex-1 pt-20 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          {/* Header */}
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+              Commercial Subscriptions
+            </span>
+            <h1 className="text-3xl font-bold text-white tracking-tight sm:text-4xl">
+              VIP Prediction Access Tiers
+            </h1>
+            <p className="text-xs sm:text-sm text-zinc-400">
+              Select your membership package to instantly unlock high-odds, verified premium football tips.
+            </p>
+          </div>
 
-      {/* Plans */}
-      <section className="py-12 px-4">
-        <div className="max-w-6xl mx-auto">
-          {loading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1,2,3].map(i => <div key={i} className="h-96 bg-white/5 animate-pulse rounded-2xl" />)}
-            </div>
-          ) : plans.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {plans.map((plan, idx) => {
-                const c = colors[idx % colors.length];
-                const isMiddle = plans.length >= 3 && idx === Math.floor(plans.length / 2);
+          {/* Pricing Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {loading ? (
+              [1, 2, 3].map((n) => (
+                <div key={n} className="h-96 rounded-lg bg-zinc-900 border border-zinc-800 animate-pulse" />
+              ))
+            ) : plans.length > 0 ? (
+              plans.map((plan, idx) => {
+                const isPopular = idx === 1;
+                const isSelected = selectedPlanId === plan._id;
                 return (
-                  <div key={plan._id} className={`relative bg-zinc-900/80 border rounded-2xl p-7 flex flex-col transition-all duration-300 hover:-translate-y-2 ${c.border} ${isMiddle ? 'shadow-[0_0_50px_rgba(16,185,129,0.08)] md:-mt-4 md:mb-4' : ''}`}>
-                    {/* Glow */}
-                    <div className={`absolute top-0 right-0 w-32 h-32 ${c.glow} rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none`} />
-
-                    {isMiddle && (
-                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-4 py-1 rounded-full shadow-lg">
-                        Most Popular
-                      </div>
-                    )}
-
-                    {/* Plan Name Badge */}
-                    <div className={`inline-flex self-start items-center px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider mb-4 ${c.badge}`}>
-                      {plan.name}
-                    </div>
-
-                    {/* Price */}
-                    <div className="mb-2">
-                      <span className="text-4xl font-extrabold text-white">{plan.currency} {plan.price.toFixed(2)}</span>
-                    </div>
-                    <p className="text-sm text-zinc-500 mb-4">Valid for {plan.durationInDays} days</p>
-
-                    {/* Max Odds highlight */}
-                    {plan.maxOdds > 0 && (
-                      <div className={`mb-6 p-3 rounded-xl border ${c.border} ${c.glow} flex items-center gap-3`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-extrabold ${c.accent} bg-white/5 border border-white/10 shrink-0`}>
-                          {plan.maxOdds}
-                        </div>
+                  <div
+                    key={plan._id}
+                    className={`rounded-lg border p-6 flex flex-col justify-between space-y-6 transition-all ${
+                      isSelected
+                        ? 'bg-zinc-900 border-emerald-500 ring-2 ring-emerald-500/20'
+                        : isPopular
+                        ? 'bg-zinc-900/90 border-emerald-500/60'
+                        : 'bg-zinc-900/60 border-zinc-800 hover:border-zinc-700'
+                    }`}
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
                         <div>
-                          <div className={`text-sm font-bold ${c.accent}`}>Maximum Odds</div>
-                          <div className="text-xs text-zinc-500">Up to {plan.maxOdds} odds per prediction</div>
+                          <h2 className="text-base font-bold text-white">{plan.name}</h2>
+                          <span className="text-xs text-zinc-400">{plan.durationInDays} Days Coverage</span>
                         </div>
+                        {isPopular && (
+                          <span className="px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 text-[10px] font-bold uppercase tracking-wider">
+                            Popular Choice
+                          </span>
+                        )}
                       </div>
-                    )}
 
-                    {/* Features */}
-                    <ul className="space-y-3 mb-8 flex-1">
-                      {plan.features?.map((f, i) => (
-                        <li key={i} className="flex items-start gap-3 text-sm text-zinc-300">
-                          <svg className={`w-4 h-4 ${c.accent} shrink-0 mt-0.5`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
+                      <div className="flex items-baseline gap-1 font-numeric">
+                        <span className="text-3xl font-bold text-white">${plan.price}</span>
+                        <span className="text-xs text-zinc-400">/ {plan.durationInDays} days</span>
+                      </div>
 
-                    {/* Payment Buttons */}
-                    <div className="space-y-3 mt-auto">
-                      <Link
-                        href={user ? `/dashboard/plans?planId=${plan._id}` : `/login?redirect=/dashboard/plans?planId=${plan._id}`}
-                        className={`w-full flex items-center justify-center h-12 rounded-xl font-bold text-sm text-white transition-all ${c.btn}`}
-                      >
-                        Choose Plan
-                      </Link>
-                      <p className="text-center text-[10px] text-zinc-600">Secure payment · Instant access after payment</p>
+                      <ul className="space-y-2.5 text-xs text-zinc-300 pt-4 border-t border-zinc-800">
+                        {plan.features && plan.features.map((feat, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <svg className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>{feat}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="pt-2">
+                      {user ? (
+                        <Link href={`/dashboard?checkoutPlan=${plan._id}`} className="block">
+                          <Button
+                            variant={isPopular ? 'primary' : 'secondary'}
+                            size="md"
+                            className="w-full"
+                          >
+                            Subscribe to {plan.name}
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Link href={`/login?redirect=/buy-tips`} className="block">
+                          <Button
+                            variant={isPopular ? 'primary' : 'secondary'}
+                            size="md"
+                            className="w-full"
+                          >
+                            Sign In to Purchase
+                          </Button>
+                        </Link>
+                      )}
                     </div>
                   </div>
                 );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-20 bg-white/3 border border-white/10 rounded-2xl max-w-xl mx-auto">
-              <h2 className="text-xl font-bold text-white mb-2">Plans Coming Soon</h2>
-              <p className="text-zinc-400 text-sm mb-6">Premium subscription plans are being prepared by our team.</p>
-              <Link href="/free-tips" className="text-emerald-400 text-sm font-bold hover:text-emerald-300">
-                View Free Tips Instead →
-              </Link>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-16 px-4 border-t border-white/5 bg-black/20">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-extrabold text-white text-center mb-12">How To Buy Football Tips</h2>
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { step: '1', title: 'Choose a Plan', desc: 'Pick the plan that matches your needs and budget.' },
-              { step: '2', title: 'Create Account', desc: 'Sign up in seconds for free — no credit card required.' },
-              { step: '3', title: 'Make Payment', desc: 'Pay using your preferred method — card, PayPal, or M-Pesa.' },
-              { step: '4', title: 'Get Tips', desc: 'Access premium picks instantly in your dashboard.' },
-            ].map(item => (
-              <div key={item.step} className="text-center">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-extrabold text-lg mx-auto mb-4">{item.step}</div>
-                <h3 className="text-sm font-bold text-white mb-1">{item.title}</h3>
-                <p className="text-xs text-zinc-500 leading-relaxed">{item.desc}</p>
+              })
+            ) : (
+              <div className="col-span-3 p-12 text-center text-xs text-zinc-500 bg-zinc-900 rounded-lg border border-zinc-800">
+                No subscription plans currently available. Please check back shortly.
               </div>
-            ))}
+            )}
           </div>
+
+          {/* Payment Methods & Instant Unlock Matrix */}
+          <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6 space-y-6">
+            <div className="border-b border-zinc-800 pb-4">
+              <h2 className="text-sm font-bold text-white">Supported Settlement Methods & Automated Fulfillment</h2>
+              <p className="text-xs text-zinc-400 mt-0.5">Instant dashboard unlock upon payment authorization.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+              <div className="p-4 rounded bg-zinc-950 border border-zinc-800/80 space-y-2">
+                <span className="font-semibold text-zinc-200 block">Credit & Debit Cards (Stripe)</span>
+                <p className="text-zinc-400 text-[11px] leading-relaxed">
+                  Automated processing via 256-bit encrypted Stripe checkout. Instant access granted automatically.
+                </p>
+              </div>
+
+              <div className="p-4 rounded bg-zinc-950 border border-zinc-800/80 space-y-2">
+                <span className="font-semibold text-zinc-200 block">PayPal Gateway</span>
+                <p className="text-zinc-400 text-[11px] leading-relaxed">
+                  Secure international PayPal transfer. Account unlocked immediately upon webhook verification.
+                </p>
+              </div>
+
+              <div className="p-4 rounded bg-zinc-950 border border-zinc-800/80 space-y-2">
+                <span className="font-semibold text-zinc-200 block">Manual / Mobile Payments</span>
+                <p className="text-zinc-400 text-[11px] leading-relaxed">
+                  Local payment option with transaction reference verification reviewed by our administrative team.
+                </p>
+              </div>
+            </div>
+          </div>
+
         </div>
-      </section>
+      </main>
 
-      {/* CTA */}
-      <section className="py-12 px-4 border-t border-white/5 text-center">
-        <p className="text-zinc-400 mb-4">Not sure yet? Try our free picks first.</p>
-        <Link href="/free-tips" className="inline-flex items-center justify-center h-10 px-6 text-sm font-bold text-white bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl transition-all">
-          View Free Tips →
-        </Link>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/5 bg-black py-8 px-6 text-center">
-        <p className="text-zinc-600 text-sm">© 2015–2026 Platinum Picks. All rights reserved. Bet responsibly. 18+</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

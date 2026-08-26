@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/constants';
+import { Button } from '@/components/ui/Button';
 
 interface FAQ {
   _id: string;
@@ -30,7 +31,7 @@ export default function AdminFAQsPage() {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
-      setFaqs(data);
+      if (Array.isArray(data)) setFaqs(data);
     } catch { showToast('Error fetching FAQs', 'error'); }
     finally { setLoading(false); }
   };
@@ -58,13 +59,15 @@ export default function AdminFAQsPage() {
     setSubmitting(true);
     const url = currentFaq ? `${API_URL}/api/faqs/${currentFaq._id}` : `${API_URL}/api/faqs`;
     const method = currentFaq ? 'PUT' : 'POST';
+    const payload = { ...formData, order: Number(formData.order) };
+
     try {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user?.token}` },
-        body: JSON.stringify({ ...formData, order: Number(formData.order) })
+        body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error('Failed to save FAQ');
       showToast(currentFaq ? 'FAQ updated' : 'FAQ created', 'success');
       setIsModalOpen(false);
       fetchFAQs();
@@ -77,9 +80,10 @@ export default function AdminFAQsPage() {
     setSubmitting(true);
     try {
       const res = await fetch(`${API_URL}/api/faqs/${currentFaq._id}`, {
-        method: 'DELETE', headers: { Authorization: `Bearer ${user?.token}` }
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${user?.token}` }
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error('Failed to delete');
       showToast('FAQ deleted', 'success');
       setIsDeleteModalOpen(false);
       fetchFAQs();
@@ -88,107 +92,178 @@ export default function AdminFAQsPage() {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 relative">
+    <div className="space-y-6">
+      
+      {/* Toast Alert */}
       {toast && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg border shadow-xl flex items-center ${toast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-          <span className="font-medium text-sm">{toast.message}</span>
-        </div>
-      )}
-      <header className="sticky top-0 z-20 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 pb-6 pt-0 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="pt-6">
-          <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Manage FAQs</h1>
-          <p className="text-zinc-400">Add, edit, or remove frequently asked questions shown on the landing page.</p>
-        </div>
-        <button onClick={() => handleOpenModal()} className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold transition-all shrink-0">
-          <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-          Add FAQ
-        </button>
-      </header>
-
-      {loading ? (
-        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 bg-white/5 animate-pulse rounded-xl" />)}</div>
-      ) : faqs.length === 0 ? (
-        <div className="text-center py-20 bg-white/5 border border-white/10 rounded-2xl">
-          <h2 className="text-xl font-bold text-white mb-2">No FAQs yet</h2>
-          <p className="text-zinc-400 mb-4">Add your first FAQ to display on the landing page.</p>
-          <button onClick={() => handleOpenModal()} className="px-6 py-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">Add FAQ</button>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {faqs.map((faq, i) => (
-            <div key={faq._id} className="bg-black/20 border border-white/10 rounded-xl p-4 flex items-start gap-4">
-              <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-300 shrink-0">{faq.order}</div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-white font-semibold text-sm truncate">{faq.question}</h3>
-                  {!faq.isActive && <span className="text-[10px] font-bold bg-zinc-700 text-zinc-400 px-2 py-0.5 rounded uppercase">Hidden</span>}
-                </div>
-                <p className="text-zinc-500 text-xs line-clamp-2">{faq.answer}</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button onClick={() => handleOpenModal(faq)} className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
-                <button onClick={() => { setCurrentFaq(faq); setIsDeleteModalOpen(true); }} className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
-              </div>
-            </div>
-          ))}
+        <div className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded border shadow-lg text-xs font-medium ${
+          toast.type === 'success' ? 'bg-emerald-950 border-emerald-800 text-emerald-300' : 'bg-rose-950 border-rose-800 text-rose-300'
+        }`}>
+          {toast.message}
         </div>
       )}
 
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+        <div className="space-y-1">
+          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Knowledge Base</span>
+          <h1 className="text-2xl font-bold text-white tracking-tight">FAQ Management</h1>
+          <p className="text-xs text-zinc-400">Create and re-order frequently asked questions for public display.</p>
+        </div>
+        <Button variant="primary" size="sm" onClick={() => handleOpenModal()}>
+          + Create New FAQ
+        </Button>
+      </div>
+
+      {/* Table */}
+      <div className="bg-zinc-900 rounded-lg border border-zinc-800 overflow-hidden font-numeric">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-zinc-800 bg-zinc-950 text-zinc-400 uppercase tracking-wider text-[10px] font-semibold">
+                <th className="py-3 px-4">Order</th>
+                <th className="py-3 px-4">Question</th>
+                <th className="py-3 px-4 text-center">Status</th>
+                <th className="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/60">
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-zinc-500">Loading FAQ records...</td>
+                </tr>
+              ) : faqs.length > 0 ? (
+                faqs.map((f) => (
+                  <tr key={f._id} className="hover:bg-zinc-800/40 transition-colors">
+                    <td className="py-3 px-4 font-bold text-zinc-300">#{f.order}</td>
+                    <td className="py-3 px-4">
+                      <span className="block font-semibold text-zinc-100">{f.question}</span>
+                      <span className="text-[11px] text-zinc-500 line-clamp-1">{f.answer}</span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      {f.isActive ? (
+                        <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 text-[10px] font-bold">
+                          ACTIVE
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 text-[10px]">
+                          HIDDEN
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-right space-x-2">
+                      <button
+                        onClick={() => handleOpenModal(f)}
+                        className="text-xs text-zinc-400 hover:text-white transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => { setCurrentFaq(f); setIsDeleteModalOpen(true); }}
+                        className="text-xs text-rose-400 hover:text-rose-300 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-zinc-500">No FAQ entries registered.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !submitting && setIsModalOpen(false)} />
-          <div className="relative bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-white/5 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-white">{currentFaq ? 'Edit FAQ' : 'New FAQ'}</h3>
-              <button disabled={submitting} onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-white"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 w-full max-w-lg space-y-4 text-xs">
+            <h3 className="text-base font-bold text-white">
+              {currentFaq ? 'Edit FAQ Entry' : 'Create FAQ Entry'}
+            </h3>
+
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">Question</label>
-                <input required type="text" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50" value={formData.question} onChange={e => setFormData({...formData, question: e.target.value})} placeholder="Which payment methods do you accept?" />
+                <label className="block text-zinc-300 font-medium mb-1">Question Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.question}
+                  onChange={(e) => setFormData({ ...formData, question: e.target.value })}
+                  placeholder="e.g. Which payment methods are supported?"
+                  className="w-full h-9 rounded bg-zinc-950 border border-zinc-800 px-3 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500"
+                />
               </div>
+
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">Answer</label>
-                <textarea required rows={4} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50 resize-none" value={formData.answer} onChange={e => setFormData({...formData, answer: e.target.value})} placeholder="We accept..." />
+                <label className="block text-zinc-300 font-medium mb-1">Answer Description *</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={formData.answer}
+                  onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
+                  placeholder="Provide clear, concise instructions..."
+                  className="w-full rounded bg-zinc-950 border border-zinc-800 p-2.5 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500 resize-none"
+                />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Order (position)</label>
-                  <input type="number" min="0" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50" value={formData.order} onChange={e => setFormData({...formData, order: e.target.value})} />
+                  <label className="block text-zinc-300 font-medium mb-1">Display Priority Order</label>
+                  <input
+                    type="number"
+                    value={formData.order}
+                    onChange={(e) => setFormData({ ...formData, order: e.target.value })}
+                    className="w-full h-9 rounded bg-zinc-950 border border-zinc-800 px-3 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500 font-numeric"
+                  />
                 </div>
-                <div className="flex items-end pb-1">
-                  <label className="flex items-center cursor-pointer">
-                    <input type="checkbox" className="mr-2 w-4 h-4 rounded" checked={formData.isActive} onChange={e => setFormData({...formData, isActive: e.target.checked})} />
-                    <span className="text-sm text-zinc-300">Visible on site</span>
+                <div className="flex items-end pb-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isActive}
+                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                      className="rounded border-zinc-800 bg-zinc-950 text-emerald-500 focus:ring-0"
+                    />
+                    <span className="text-zinc-200 font-semibold">Active & Visible</span>
                   </label>
                 </div>
               </div>
-              <div className="flex justify-end gap-3 pt-2 border-t border-white/5">
-                <button type="button" disabled={submitting} onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 rounded-xl font-medium text-zinc-300 hover:bg-white/5 transition-colors">Cancel</button>
-                <button type="submit" disabled={submitting} className="flex items-center px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold transition-colors">
-                  {submitting && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />}Save FAQ
-                </button>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-zinc-800">
+                <Button type="button" variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" size="sm" isLoading={submitting}>
+                  Save Entry
+                </Button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {isDeleteModalOpen && currentFaq && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !submitting && setIsDeleteModalOpen(false)} />
-          <div className="relative bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-sm p-6 text-center animate-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-bold text-white mb-2">Delete FAQ?</h3>
-            <p className="text-zinc-400 text-sm mb-6">Remove "{currentFaq.question.slice(0, 50)}..."?</p>
-            <div className="flex gap-3">
-              <button disabled={submitting} onClick={() => setIsDeleteModalOpen(false)} className="flex-1 py-2.5 rounded-xl font-medium bg-white/5 text-zinc-300 hover:bg-white/10 transition-colors">Cancel</button>
-              <button disabled={submitting} onClick={handleDelete} className="flex-1 py-2.5 rounded-xl font-bold bg-red-500 text-white hover:bg-red-600 flex items-center justify-center">
-                {submitting && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />}Delete
-              </button>
+      {/* Delete Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 w-full max-w-sm space-y-4 text-xs">
+            <h3 className="text-base font-bold text-white">Confirm Deletion</h3>
+            <p className="text-zinc-400">Are you sure you want to delete this FAQ entry?</p>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setIsDeleteModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="danger" size="sm" onClick={handleDelete} isLoading={submitting}>
+                Delete Entry
+              </Button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }
