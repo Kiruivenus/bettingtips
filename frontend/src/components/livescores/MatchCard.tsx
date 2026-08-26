@@ -47,7 +47,7 @@ const ImageWithFallback: React.FC<{ src?: string; alt: string; className: string
 
   if (imgError || !src) {
     return (
-      <span className="flex items-center justify-center font-bold text-[9px] uppercase text-zinc-400 bg-zinc-800 rounded w-full h-full">
+      <span className="flex items-center justify-center font-bold text-[9px] uppercase text-zinc-400 bg-zinc-800/40 rounded w-full h-full">
         {fallbackText.slice(0, 2)}
       </span>
     );
@@ -84,7 +84,7 @@ export const MatchCard: React.FC<MatchProps> = ({ match }) => {
       {/* League Header */}
       <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-zinc-800/80">
         <div className="flex items-center gap-2 min-w-0 pr-2">
-          <div className="w-4 h-4 rounded bg-zinc-950 flex items-center justify-center shrink-0 overflow-hidden">
+          <div className="w-4 h-4 flex items-center justify-center shrink-0 overflow-hidden bg-transparent">
             <ImageWithFallback
               src={match.league.logo}
               alt={match.league.name}
@@ -118,7 +118,7 @@ export const MatchCard: React.FC<MatchProps> = ({ match }) => {
         {/* Home Team */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0 pr-2">
-            <div className="w-6 h-6 rounded bg-zinc-950 p-0.5 flex items-center justify-center border border-zinc-800 shrink-0 overflow-hidden">
+            <div className="w-6 h-6 flex items-center justify-center shrink-0 overflow-hidden bg-transparent">
               <ImageWithFallback
                 src={match.teams.home.logo}
                 alt={match.teams.home.name}
@@ -136,7 +136,7 @@ export const MatchCard: React.FC<MatchProps> = ({ match }) => {
         {/* Away Team */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0 pr-2">
-            <div className="w-6 h-6 rounded bg-zinc-950 p-0.5 flex items-center justify-center border border-zinc-800 shrink-0 overflow-hidden">
+            <div className="w-6 h-6 flex items-center justify-center shrink-0 overflow-hidden bg-transparent">
               <ImageWithFallback
                 src={match.teams.away.logo}
                 alt={match.teams.away.name}
