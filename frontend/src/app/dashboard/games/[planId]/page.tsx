@@ -92,7 +92,9 @@ export default function GamesPage() {
   const isPendingStatus = (s: string) => s === 'pending' || s === 'UPCOMING' || s === 'ACTIVE' || s === 'LOCKED';
   const isPastStatus = (s: string) => s === 'won' || s === 'lost' || s === 'COMPLETED' || s === 'VOID';
 
-  const pendingTips = tips.filter(t => isPendingStatus(t.status));
+  const pendingTips = isFree
+    ? tips.filter(t => isPendingStatus(t.status)).slice(0, 5)
+    : tips.filter(t => isPendingStatus(t.status));
   const pastTips = tips.filter(t => isPastStatus(t.status));
 
   const planName = isFree ? 'Free Tips' : (plan?.name || 'Premium Plan');

@@ -58,7 +58,7 @@ export default function FreeTipsPage() {
 
   const isPendingStatus = (s: string) => s === 'pending' || s === 'UPCOMING' || s === 'ACTIVE' || s === 'LOCKED';
 
-  const pendingTips = filteredTips.filter(t => isPendingStatus(t.status));
+  const pendingTips = filteredTips.filter(t => isPendingStatus(t.status)).slice(0, 5);
   const settledTips = filteredTips.filter(t => !isPendingStatus(t.status));
 
   return (

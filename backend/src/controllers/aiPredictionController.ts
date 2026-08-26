@@ -240,6 +240,11 @@ export async function runPredictionGenerationService() {
   let invalidFixtures = invalidCount;
   let errors = 0;
 
+  let totalActiveFreeCount = await Tip.countDocuments({
+    accessLevel: 'FREE',
+    status: { $in: ['UPCOMING', 'ACTIVE', 'pending', 'LOCKED'] }
+  });
+
   const freeCountByDate: Record<string, number> = {};
 
   for (const fixture of validFixtures) {
@@ -257,7 +262,6 @@ export async function runPredictionGenerationService() {
         continue;
       }
 
-      // Format date for free limit enforcement (Max 3 Free Tips per calendar date server-side)
       const dayKey = generated.kickoffTime.toISOString().split('T')[0];
 
       if (freeCountByDate[dayKey] === undefined) {
@@ -273,10 +277,12 @@ export async function runPredictionGenerationService() {
       let accessLevel: 'FREE' | 'VIP' = 'VIP';
       let isPremium = true;
 
-      if (freeCountByDate[dayKey] < 3) {
+      // Enforce strict max 5 active upcoming free tips overall across all dates
+      if (totalActiveFreeCount < 5 && freeCountByDate[dayKey] < 2) {
         accessLevel = 'FREE';
         isPremium = false;
         freeCountByDate[dayKey] += 1;
+        totalActiveFreeCount += 1;
       }
 
       const tipDoc = new Tip({

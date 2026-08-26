@@ -20,22 +20,23 @@ export const getTips = async (req: AuthRequest, res: Response) => {
     const tips = await Tip.find({}).sort({ matchDate: -1 }).populate('planIds', 'name');
     const isPremiumUser = hasActivePremium(req);
 
-    // Group free tips by date to enforce strict 3 per day server-side for non-premium users
-    const freeTipsCountByDate: Record<string, number> = {};
+    // Enforce strict max 5 active upcoming free tips server-side for non-premium users
+    let activeFreeCount = 0;
 
     const formattedTips = tips.map((tip) => {
       const tipObj = tip.toObject();
-      const dayKey = tipObj.matchDate ? new Date(tipObj.matchDate).toISOString().split('T')[0] : 'unknown';
-
       const isFreeTip = !tipObj.isPremium || tipObj.accessLevel === 'FREE';
 
       if (!isPremiumUser) {
         if (isFreeTip) {
-          freeTipsCountByDate[dayKey] = (freeTipsCountByDate[dayKey] || 0) + 1;
-          // Enforce strict 3 free tips per day server-side
-          if (freeTipsCountByDate[dayKey] > 3) {
-            tipObj.prediction = 'Daily free prediction limit reached. Upgrade to VIP to access.';
-            tipObj.selection = 'Daily free prediction limit reached.';
+          if (tipObj.status === 'pending' || tipObj.status === 'UPCOMING' || tipObj.status === 'ACTIVE' || tipObj.status === 'LOCKED') {
+            activeFreeCount++;
+            if (activeFreeCount > 5) {
+              tipObj.isPremium = true;
+              tipObj.accessLevel = 'VIP';
+              tipObj.prediction = 'Free prediction limit reached (Max 5). Upgrade to VIP to access.';
+              tipObj.selection = 'Free prediction limit reached.';
+            }
           }
         } else if (tipObj.status === 'pending' || tipObj.status === 'UPCOMING' || tipObj.status === 'ACTIVE' || tipObj.status === 'LOCKED') {
           tipObj.prediction = 'Requires active VIP subscription';
