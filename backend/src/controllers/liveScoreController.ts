@@ -1,143 +1,228 @@
 import { Request, Response } from 'express';
 
-// In-memory cache to stay within rate limits (10 req/min)
-const cache: Record<string, { data: any; timestamp: number }> = {};
-const CACHE_DURATION = 60 * 1000; // 60 seconds
+// In-memory cache for ESPN API responses (30-second TTL)
+const cache: Record<string, { data: any[]; timestamp: number }> = {};
+const CACHE_TTL = 30 * 1000;
 
-const FOOTBALL_DATA_BASE = 'https://api.football-data.org/v4';
+const ESPN_SOCCER_BASE = 'https://site.api.espn.com/apis/site/v2/sports/soccer';
 
-// Normalize Football-Data.org response to our frontend format
-function normalizeMatch(match: any) {
+// Specific major league codes for rich multi-league coverage
+const LEAGUE_CODES = [
+  'all',
+  'eng.1',
+  'esp.1',
+  'ita.1',
+  'ger.1',
+  'fra.1',
+  'uefa.champions',
+  'uefa.europa',
+  'usa.1',
+  'conmebol.libertadores',
+  'eng.league_cup',
+  'eng.2'
+];
+
+function formatDateYYYYMMDD(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}${m}${d}`;
+}
+
+function normalizeEspnEvent(event: any, leagueFallback: string = 'Football') {
+  const comp = event.competitions?.[0] || {};
+  const homeComp = comp.competitors?.find((c: any) => c.homeAway === 'home') || comp.competitors?.[0];
+  const awayComp = comp.competitors?.find((c: any) => c.homeAway === 'away') || comp.competitors?.[1];
+
+  const statusType = comp.status?.type || {};
+  const state = statusType.state; // "pre", "in", "post"
+
+  let shortStatus = 'NS';
+  if (state === 'in') {
+    const detail = (statusType.shortDetail || statusType.detail || '').toUpperCase();
+    if (detail.includes('HT') || detail.includes('HALF')) shortStatus = 'HT';
+    else if (comp.status?.period === 1) shortStatus = '1H';
+    else shortStatus = '2H';
+  } else if (state === 'post') {
+    shortStatus = 'FT';
+  } else {
+    shortStatus = 'NS';
+  }
+
+  const elapsed = state === 'in' ? Math.round(comp.status?.clock || 0) : state === 'post' ? 90 : null;
+  const homeScore = state !== 'pre' && homeComp?.score !== undefined ? parseInt(homeComp.score, 10) : null;
+  const awayScore = state !== 'pre' && awayComp?.score !== undefined ? parseInt(awayComp.score, 10) : null;
+
+  // Extract clean league title
+  let leagueName = comp.altGameNote || comp.notes?.[0]?.headline || event.season?.name || leagueFallback;
+  if (!leagueName || leagueName === 'Football') {
+    leagueName = event.league?.name || leagueFallback;
+  }
+
   return {
     fixture: {
-      id: match.id,
+      id: String(event.id),
       status: {
-        elapsed: match.minute || null,
-        short: mapStatus(match.status),
+        elapsed: isNaN(elapsed as any) ? null : elapsed,
+        short: shortStatus,
+        detail: statusType.shortDetail || statusType.detail || '',
+        state: state
       },
-      date: match.utcDate,
+      date: event.date || comp.date,
     },
     league: {
-      name: match.competition?.name || 'Unknown',
-      logo: match.competition?.emblem || '',
+      name: leagueName,
+      logo: event.league?.logo || 'https://a.espncdn.com/i/teamlogos/leagues/500/all.png',
     },
     teams: {
       home: {
-        name: match.homeTeam?.shortName || match.homeTeam?.name || 'TBD',
-        logo: match.homeTeam?.crest || '',
+        name: homeComp?.team?.displayName || homeComp?.team?.name || 'Home Team',
+        logo: homeComp?.team?.logo || 'https://a.espncdn.com/i/teamlogos/soccer/500/default-team-logo.png',
       },
       away: {
-        name: match.awayTeam?.shortName || match.awayTeam?.name || 'TBD',
-        logo: match.awayTeam?.crest || '',
+        name: awayComp?.team?.displayName || awayComp?.team?.name || 'Away Team',
+        logo: awayComp?.team?.logo || 'https://a.espncdn.com/i/teamlogos/soccer/500/default-team-logo.png',
       },
     },
     goals: {
-      home: match.score?.fullTime?.home ?? match.score?.halfTime?.home ?? null,
-      away: match.score?.fullTime?.away ?? match.score?.halfTime?.away ?? null,
+      home: isNaN(homeScore as any) ? null : homeScore,
+      away: isNaN(awayScore as any) ? null : awayScore,
     },
   };
 }
 
-function mapStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    SCHEDULED: 'NS',
-    TIMED: 'NS',
-    IN_PLAY: '2H',
-    PAUSED: 'HT',
-    FINISHED: 'FT',
-    SUSPENDED: 'SUSP',
-    POSTPONED: 'PST',
-    CANCELLED: 'CANC',
-    AWARDED: 'FT',
-    LIVE: '1H',
-  };
-  return statusMap[status] || status;
+async function fetchEspnScoreboard(endpoint: string): Promise<any[]> {
+  try {
+    const res = await fetch(`${ESPN_SOCCER_BASE}/${endpoint}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    
+    const leagueName = data.leagues?.[0]?.name || 'Football';
+    const events = data.events || [];
+    
+    return events.map((evt: any) => normalizeEspnEvent(evt, leagueName));
+  } catch (error) {
+    console.error(`Error fetching ESPN endpoint (${endpoint}):`, error);
+    return [];
+  }
 }
 
-async function fetchFromAPI(endpoint: string, cacheKey: string) {
-  const apiKey = process.env.FOOTBALL_API_KEY;
+// Helper to fetch multiple dates/leagues in parallel and deduplicate by fixture ID
+async function aggregateEspnFixtures(dateStrings: string[]): Promise<any[]> {
+  const promises: Promise<any[]>[] = [];
 
-  // Check cache first
-  const now = Date.now();
-  if (cache[cacheKey] && now - cache[cacheKey].timestamp < CACHE_DURATION) {
-    return cache[cacheKey].data;
+  for (const dateStr of dateStrings) {
+    // Universal scoreboard for date
+    promises.push(fetchEspnScoreboard(`all/scoreboard?dates=${dateStr}&limit=500`));
+
+    // Selective top leagues for date to ensure deep coverage up to 400+ games
+    for (const code of ['eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1', 'uefa.champions']) {
+      promises.push(fetchEspnScoreboard(`${code}/scoreboard?dates=${dateStr}&limit=100`));
+    }
   }
 
-  if (!apiKey || apiKey === 'your_api_key_here') {
-    return null; // Will trigger mock data fallback
+  const results = await Promise.all(promises);
+  const map = new Map<string, any>();
+
+  for (const list of results) {
+    for (const match of list) {
+      if (!map.has(match.fixture.id)) {
+        map.set(match.fixture.id, match);
+      }
+    }
   }
 
-  const response = await fetch(`${FOOTBALL_DATA_BASE}${endpoint}`, {
-    headers: { 'X-Auth-Token': apiKey },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Football-Data API error: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  const normalized = (data.matches || []).map(normalizeMatch);
-
-  cache[cacheKey] = { data: normalized, timestamp: now };
-  return normalized;
+  return Array.from(map.values());
 }
-
-// Mock data fallback
-const mockMatches = [
-  {
-    fixture: { id: 1, status: { elapsed: 65, short: '2H' }, date: new Date().toISOString() },
-    league: { name: 'Premier League', logo: 'https://crests.football-data.org/PL.png' },
-    teams: {
-      home: { name: 'Man City', logo: 'https://crests.football-data.org/65.png' },
-      away: { name: 'Liverpool', logo: 'https://crests.football-data.org/64.png' },
-    },
-    goals: { home: 2, away: 2 },
-  },
-  {
-    fixture: { id: 2, status: { elapsed: 12, short: '1H' }, date: new Date().toISOString() },
-    league: { name: 'La Liga', logo: 'https://crests.football-data.org/PD.png' },
-    teams: {
-      home: { name: 'Real Madrid', logo: 'https://crests.football-data.org/86.png' },
-      away: { name: 'Barcelona', logo: 'https://crests.football-data.org/81.png' },
-    },
-    goals: { home: 1, away: 0 },
-  },
-];
 
 export const getLiveMatches = async (req: Request, res: Response) => {
+  const cacheKey = 'live_espn';
+  const now = Date.now();
+
+  if (cache[cacheKey] && now - cache[cacheKey].timestamp < CACHE_TTL) {
+    return res.status(200).json(cache[cacheKey].data);
+  }
+
   try {
-    // Football-Data.org uses status=LIVE for in-play matches
-    const data = await fetchFromAPI('/matches?status=LIVE', 'live');
-    if (!data) return res.status(200).json(mockMatches);
-    res.status(200).json(data);
+    const todayStr = formatDateYYYYMMDD(new Date());
+    const allToday = await aggregateEspnFixtures([todayStr]);
+
+    // Live matches: state === "in"
+    let liveMatches = allToday.filter(m => m.fixture.status.state === 'in');
+
+    // If no live matches in-play at this moment, include today's closest upcoming/recent matches
+    if (liveMatches.length === 0) {
+      liveMatches = allToday.slice(0, 50);
+    }
+
+    cache[cacheKey] = { data: liveMatches, timestamp: now };
+    return res.status(200).json(liveMatches);
   } catch (error: any) {
-    console.error('Live Scores Error:', error.message);
-    res.status(200).json(mockMatches); // Graceful fallback
+    console.error('ESPN Live Scores Error:', error);
+    return res.status(500).json({ message: 'Failed to load live matches from ESPN', error: error.message });
   }
 };
 
 export const getUpcomingMatches = async (req: Request, res: Response) => {
+  const cacheKey = 'upcoming_espn';
+  const now = Date.now();
+
+  if (cache[cacheKey] && now - cache[cacheKey].timestamp < CACHE_TTL) {
+    return res.status(200).json(cache[cacheKey].data);
+  }
+
   try {
-    const today = new Date().toISOString().split('T')[0];
-    const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const data = await fetchFromAPI(`/matches?status=SCHEDULED,TIMED&dateFrom=${today}&dateTo=${nextWeek}`, 'upcoming');
-    if (!data) return res.status(200).json(mockMatches.map(m => ({ ...m, fixture: { ...m.fixture, status: { short: 'NS', elapsed: null } }, goals: { home: null, away: null } })));
-    res.status(200).json(data);
+    const dates: string[] = [];
+    const today = new Date();
+
+    // Upcoming: today + next 6 days
+    for (let i = 0; i <= 6; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      dates.push(formatDateYYYYMMDD(d));
+    }
+
+    const allUpcoming = await aggregateEspnFixtures(dates);
+    const upcomingFiltered = allUpcoming
+      .filter(m => m.fixture.status.state === 'pre')
+      .sort((a, b) => new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime());
+
+    cache[cacheKey] = { data: upcomingFiltered, timestamp: now };
+    return res.status(200).json(upcomingFiltered);
   } catch (error: any) {
-    console.error('Upcoming Matches Error:', error.message);
-    res.status(500).json({ message: 'Error fetching upcoming matches', error: error.message });
+    console.error('ESPN Upcoming Matches Error:', error);
+    return res.status(500).json({ message: 'Failed to load upcoming matches', error: error.message });
   }
 };
 
 export const getPastResults = async (req: Request, res: Response) => {
+  const cacheKey = 'results_espn';
+  const now = Date.now();
+
+  if (cache[cacheKey] && now - cache[cacheKey].timestamp < CACHE_TTL) {
+    return res.status(200).json(cache[cacheKey].data);
+  }
+
   try {
-    const today = new Date().toISOString().split('T')[0];
-    const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const data = await fetchFromAPI(`/matches?status=FINISHED&dateFrom=${lastWeek}&dateTo=${today}`, 'results');
-    if (!data) return res.status(200).json(mockMatches.map(m => ({ ...m, fixture: { ...m.fixture, status: { short: 'FT', elapsed: 90 } } })));
-    res.status(200).json(data);
+    const dates: string[] = [];
+    const today = new Date();
+
+    // Results: past 5 days
+    for (let i = 1; i <= 5; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      dates.push(formatDateYYYYMMDD(d));
+    }
+
+    const allResults = await aggregateEspnFixtures(dates);
+    const resultsFiltered = allResults
+      .filter(m => m.fixture.status.state === 'post')
+      .sort((a, b) => new Date(b.fixture.date).getTime() - new Date(a.fixture.date).getTime());
+
+    cache[cacheKey] = { data: resultsFiltered, timestamp: now };
+    return res.status(200).json(resultsFiltered);
   } catch (error: any) {
-    console.error('Past Results Error:', error.message);
-    res.status(500).json({ message: 'Error fetching past results', error: error.message });
+    console.error('ESPN Past Results Error:', error);
+    return res.status(500).json({ message: 'Failed to load past match results', error: error.message });
   }
 };
