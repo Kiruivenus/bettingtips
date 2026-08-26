@@ -39,13 +39,11 @@ export default function GamesPage() {
   const [loading, setLoading] = useState(true);
   const isFree = planId === 'free';
 
-  // Check if user actually owns this plan (skip for free)
-  const userActivePlan = user?.activePlan;
+  // Any user with an active non-expired subscription has full access until expiry
   const isSubscriptionActive = user?.subscriptionExpiry
     ? new Date(user.subscriptionExpiry) > new Date()
     : false;
-  const activeId = typeof userActivePlan === 'string' ? userActivePlan : userActivePlan?._id;
-  const hasAccess = isFree || (isSubscriptionActive && (activeId === planId || user?.role === 'admin'));
+  const hasAccess = isFree || isSubscriptionActive || user?.role === 'admin';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,8 +60,8 @@ export default function GamesPage() {
               setTips(tipsData.filter((t: Tip) => !t.isPremium || t.accessLevel === 'FREE'));
             } else {
               setTips(tipsData.filter((t: Tip) => {
+                if (t.isPremium || t.accessLevel === 'VIP') return true;
                 if (!t.planIds) return false;
-                // Handle both populated and unpopulated planIds
                 const ids = t.planIds.map((p: any) => typeof p === 'object' && p ? p._id : p);
                 return ids.includes(planId);
               }));
@@ -97,31 +95,31 @@ export default function GamesPage() {
     : tips.filter(t => isPendingStatus(t.status));
   const pastTips = tips.filter(t => isPastStatus(t.status));
 
-  const planName = isFree ? 'Free Tips' : (plan?.name || 'Premium Plan');
+  const planName = isFree ? 'Free Tips' : (plan?.name || 'VIP Premium Predictions');
   const planDescription = isFree
     ? 'Daily free expert predictions with full transparency.'
-    : `Premium predictions with up to ${plan?.maxOdds || 'N/A'} odds.`;
+    : `Full VIP access to high-confidence match analytics and predictions.`;
 
-  // If user doesn't have access to this plan, redirect message
+  // If user doesn't have an active subscription and isn't admin, prompt subscription purchase
   if (!loading && !hasAccess) {
     return (
-      <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 font-sans">
         <header className="md:sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
           <Link href="/dashboard" className="text-xs text-zinc-500 hover:text-white transition-colors mb-3 inline-flex items-center gap-1">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            Back to Plans
+            Back to Dashboard
           </Link>
           <h1 className="text-2xl font-bold text-white">{planName}</h1>
         </header>
         <div className="px-4 sm:px-6 md:px-8 pb-8">
-          <div className="flex flex-col items-center justify-center py-20 text-center bg-white/5 border border-dashed border-white/10 rounded-2xl">
+          <div className="flex flex-col items-center justify-center py-20 text-center bg-zinc-900 border border-dashed border-zinc-800 rounded-2xl">
             <div className="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mb-4">
               <svg className="w-8 h-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Plan Not Active</h2>
-            <p className="text-zinc-400 text-sm mb-6 max-w-sm">You need to purchase this plan to view its premium predictions.</p>
-            <Link href="/dashboard/buy-tips" className="inline-flex items-center justify-center h-11 px-8 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-bold text-sm transition-colors shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-              Buy Plan
+            <h2 className="text-xl font-bold text-white mb-2">VIP Membership Required</h2>
+            <p className="text-zinc-400 text-sm mb-6 max-w-sm">Upgrade to a VIP membership package to unlock unmasked predictions and full AI match analysis.</p>
+            <Link href="/buy-tips" className="inline-flex items-center justify-center h-11 px-8 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold text-sm transition-colors shadow-lg">
+              Unlock VIP Membership
             </Link>
           </div>
         </div>
@@ -130,11 +128,11 @@ export default function GamesPage() {
   }
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 font-sans">
       <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8">
         <Link href="/dashboard" className="text-xs text-zinc-500 hover:text-white transition-colors mb-3 inline-flex items-center gap-1">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-          Back to Plans
+          Back to Dashboard
         </Link>
         <h1 className="text-2xl font-bold text-white mb-1">{planName}</h1>
         <p className="text-zinc-400 text-sm">{planDescription}</p>
@@ -149,12 +147,12 @@ export default function GamesPage() {
           <>
             {/* Active / Pending Tips */}
             <section>
-              <h2 className="text-lg font-bold text-white mb-6">Today's Picks</h2>
+              <h2 className="text-lg font-bold text-white mb-6">Today's VIP Picks</h2>
               {pendingTips.length > 0 ? (
                 <MatchResults tips={pendingTips} showPlanBadge={false} />
               ) : (
                 <div className="text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
-                  <p className="text-zinc-400">No active predictions right now. Check back soon!</p>
+                  <p className="text-zinc-400">No active VIP predictions right now. Check back soon!</p>
                 </div>
               )}
             </section>

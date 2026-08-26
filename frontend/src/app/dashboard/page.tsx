@@ -22,7 +22,6 @@ export default function DashboardPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const userActivePlan = user?.activePlan;
   const isSubscriptionActive = user?.subscriptionExpiry
     ? new Date(user.subscriptionExpiry) > new Date()
     : false;
@@ -45,14 +44,13 @@ export default function DashboardPage() {
     fetchPlans();
   }, []);
 
-  const isPlanOwned = (planId: string) => {
-    if (!isSubscriptionActive || !userActivePlan) return false;
-    const activeId = typeof userActivePlan === 'string' ? userActivePlan : userActivePlan._id;
-    return activeId === planId;
+  // Active subscribers have unlocked access to all VIP portals until subscription expires
+  const isPlanUnlocked = (planId: string) => {
+    return isSubscriptionActive || user?.role === 'admin';
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       
       {/* Header */}
       <div className="border-b border-zinc-800 pb-4 space-y-1">
@@ -66,14 +64,14 @@ export default function DashboardPage() {
         <div className="space-y-1">
           <span className="text-[11px] text-zinc-500 uppercase tracking-wider block font-medium">Subscription Status</span>
           <div className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${isSubscriptionActive ? 'bg-emerald-500' : 'bg-zinc-500'}`} />
+            <span className={`w-2 h-2 rounded-full ${isSubscriptionActive ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-500'}`} />
             <span className="text-sm font-bold text-white">
-              {isSubscriptionActive ? 'VIP Access Granted' : 'Standard Free Tier'}
+              {isSubscriptionActive ? 'VIP Full Access Granted' : 'Standard Free Tier'}
             </span>
           </div>
           {isSubscriptionActive && user?.subscriptionExpiry && (
-            <span className="text-xs text-zinc-400 font-numeric block pt-0.5">
-              Active until: {new Date(user.subscriptionExpiry).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+            <span className="text-xs text-emerald-400 font-numeric block pt-0.5 font-medium">
+              Active until: {new Date(user.subscriptionExpiry).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
         </div>
@@ -120,9 +118,9 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            {/* Owned VIP Plans */}
-            {plans.filter(p => isPlanOwned(p._id)).map((plan) => (
-              <div key={plan._id} className="bg-zinc-900 rounded-lg border border-emerald-500/60 p-5 flex flex-col justify-between space-y-4">
+            {/* Unlocked VIP Plans */}
+            {plans.filter(p => isPlanUnlocked(p._id)).map((plan) => (
+              <div key={plan._id} className="bg-zinc-900 rounded-lg border border-emerald-500/60 p-5 flex flex-col justify-between space-y-4 shadow-sm">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 text-[10px] font-bold uppercase">
@@ -132,7 +130,7 @@ export default function DashboardPage() {
                   </div>
                   <h3 className="text-sm font-bold text-white">{plan.name} Package</h3>
                   <p className="text-xs text-zinc-400 leading-relaxed">
-                    Premium selections with high-confidence odds and match statistics.
+                    Full access to high-confidence premium predictions and AI match analytics.
                   </p>
                 </div>
 
@@ -144,8 +142,8 @@ export default function DashboardPage() {
               </div>
             ))}
 
-            {/* Locked VIP Plans */}
-            {plans.filter(p => !isPlanOwned(p._id)).map((plan) => (
+            {/* Locked VIP Plans (shown only when subscription is not active) */}
+            {plans.filter(p => !isPlanUnlocked(p._id)).map((plan) => (
               <div key={plan._id} className="bg-zinc-900/60 rounded-lg border border-zinc-800/80 p-5 flex flex-col justify-between space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -156,7 +154,7 @@ export default function DashboardPage() {
                   </div>
                   <h3 className="text-sm font-semibold text-zinc-300">{plan.name} Package</h3>
                   <p className="text-xs text-zinc-500 leading-relaxed">
-                    Requires active {plan.name} subscription authorization.
+                    Requires active VIP subscription authorization.
                   </p>
                 </div>
 
