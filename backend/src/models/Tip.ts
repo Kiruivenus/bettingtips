@@ -14,6 +14,7 @@ export interface ITip extends Document {
   prediction: string;
   probability?: number;
   confidence: number;
+  confidenceLevel?: 'VERY HIGH' | 'HIGH' | 'MODERATE' | 'LOW' | 'NO PREDICTION';
   referenceOdds?: number | null;
   odds: number;
   accessLevel?: 'FREE' | 'VIP_BASIC' | 'VIP_PREMIUM' | 'VIP_ELITE' | 'VIP';
@@ -25,6 +26,11 @@ export interface ITip extends Document {
   settledAt?: Date;
   isPremium: boolean;
   planIds?: mongoose.Types.ObjectId[];
+  keyFactors?: string[];
+  riskFactors?: string[];
+  analysisReport?: Record<string, any>;
+  qualityGateStatus?: 'PUBLISHED' | 'REJECTED_NO_BET';
+  rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,6 +54,11 @@ const TipSchema: Schema = new Schema(
     prediction: { type: String, required: true },
     probability: { type: Number, min: 0, max: 100 },
     confidence: { type: Number, required: true, min: 1, max: 100 },
+    confidenceLevel: {
+      type: String,
+      enum: ['VERY HIGH', 'HIGH', 'MODERATE', 'LOW', 'NO PREDICTION'],
+      default: 'HIGH'
+    },
     referenceOdds: { type: Number, default: null },
     odds: { type: Number, required: true, default: 0 },
     accessLevel: { 
@@ -61,12 +72,21 @@ const TipSchema: Schema = new Schema(
       enum: ['UPCOMING', 'ACTIVE', 'LOCKED', 'COMPLETED', 'VOID', 'FAILED', 'pending', 'won', 'lost'], 
       default: 'UPCOMING' 
     },
-    source: { type: String, default: 'ESPN AI Engine' },
-    modelVersion: { type: String, default: 'v1.0' },
+    source: { type: String, default: 'Multi-Stage Analytics Engine' },
+    modelVersion: { type: String, default: 'v2.5-MultiStage' },
     result: { type: String, default: '' },
     settledAt: { type: Date },
     isPremium: { type: Boolean, default: false },
     planIds: [{ type: Schema.Types.ObjectId, ref: 'SubscriptionPlan' }],
+    keyFactors: [{ type: String }],
+    riskFactors: [{ type: String }],
+    analysisReport: { type: Schema.Types.Mixed, default: {} },
+    qualityGateStatus: {
+      type: String,
+      enum: ['PUBLISHED', 'REJECTED_NO_BET'],
+      default: 'PUBLISHED'
+    },
+    rejectionReason: { type: String, default: '' }
   },
   { timestamps: true }
 );

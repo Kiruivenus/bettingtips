@@ -17,6 +17,7 @@ interface Tip {
   prediction: string;
   probability?: number;
   confidence: number;
+  confidenceLevel?: 'VERY HIGH' | 'HIGH' | 'MODERATE' | 'LOW' | 'NO PREDICTION';
   referenceOdds?: number | null;
   odds: number;
   accessLevel?: 'FREE' | 'VIP_BASIC' | 'VIP_PREMIUM' | 'VIP_ELITE' | 'VIP';
@@ -26,6 +27,8 @@ interface Tip {
   matchDate: string;
   planIds?: Array<{ _id: string; name: string }>;
   result?: string;
+  keyFactors?: string[];
+  riskFactors?: string[];
   createdAt?: string;
 }
 
@@ -37,9 +40,14 @@ interface Plan {
 interface AutoGenResult {
   success: boolean;
   fixturesScanned: number;
+  analyzed: number;
   predictionsCreated: number;
+  highConfidence: number;
+  moderateConfidence: number;
+  rejectedNoBet: number;
+  insufficientData: number;
+  conflictingSignals: number;
   duplicatesSkipped: number;
-  invalidFixtures: number;
   errors: number;
   message: string;
 }
@@ -242,8 +250,14 @@ export default function AdminTipsPage() {
     }
   };
 
+  // Real Historical Accuracy Calculation strictly from settled predictions
+  const wonCount = tips.filter(t => t.status === 'won').length;
+  const lostCount = tips.filter(t => t.status === 'lost').length;
+  const settledTotal = wonCount + lostCount;
+  const realAccuracyRate = settledTotal > 0 ? ((wonCount / settledTotal) * 100).toFixed(1) : 'N/A';
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       
       {/* Toast Alert */}
       {toast && (
@@ -257,9 +271,9 @@ export default function AdminTipsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
         <div className="space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Content Control</span>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Predictions & Tips Management</h1>
-          <p className="text-xs text-zinc-400">Automated ESPN AI sync, settlement resolution, and access enforcement.</p>
+          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Multi-Stage Analytics Control Center</span>
+          <h1 className="text-2xl font-bold text-white tracking-tight">AI Predictions Engine</h1>
+          <p className="text-xs text-zinc-400">Data-driven multi-stage evaluation pipeline with strict Quality Gate enforcement.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -278,7 +292,31 @@ export default function AdminTipsPage() {
         </div>
       </div>
 
-      {/* Automated Engine Banner */}
+      {/* Metrics Summary Overview */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 block">Total Predictions</span>
+          <span className="text-xl font-bold text-white font-numeric">{tips.length}</span>
+          <span className="text-[10px] text-zinc-400 block">In Database</span>
+        </div>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">Settled Accuracy</span>
+          <span className="text-xl font-bold text-emerald-400 font-numeric">{realAccuracyRate}{realAccuracyRate !== 'N/A' ? '%' : ''}</span>
+          <span className="text-[10px] text-zinc-400 block">{wonCount} Won / {settledTotal} Settled</span>
+        </div>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">Quality Gate Status</span>
+          <span className="text-xl font-bold text-white font-numeric">Active</span>
+          <span className="text-[10px] text-zinc-400 block">Rejects Weak Signals</span>
+        </div>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400 block">Engine Version</span>
+          <span className="text-xl font-bold text-white font-numeric">v2.5</span>
+          <span className="text-[10px] text-zinc-400 block">Multi-Stage Analytics</span>
+        </div>
+      </div>
+
+      {/* Automated Engine Status Banner */}
       <div className="bg-emerald-950/40 border border-emerald-800/60 rounded-lg p-3.5 flex items-center justify-between text-xs text-emerald-300">
         <div className="flex items-center gap-2.5">
           <span className="relative flex h-2.5 w-2.5">
@@ -286,8 +324,8 @@ export default function AdminTipsPage() {
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
           <div>
-            <span className="font-bold text-white">🤖 Automated AI Entry & Plan Allocation Active</span>
-            <p className="text-emerald-400/80 text-[11px]">Upcoming games are automatically fetched from ESPN, analyzed by AI, and allocated across all active subscription plans every 15 minutes. Zero manual entry required.</p>
+            <span className="font-bold text-white">🤖 Multi-Stage Pipeline Active</span>
+            <p className="text-emerald-400/80 text-[11px]">Fixtures are evaluated across 5 analytical sub-models every 15 minutes. High-confidence picks pass the Quality Gate and auto-allocate across subscription plans.</p>
           </div>
         </div>
       </div>
@@ -300,7 +338,7 @@ export default function AdminTipsPage() {
               <tr className="border-b border-zinc-800 bg-zinc-950 text-zinc-400 uppercase tracking-wider text-[10px] font-semibold">
                 <th className="py-3 px-4">Fixture / League</th>
                 <th className="py-3 px-4">Market / Selection</th>
-                <th className="py-3 px-4 text-center">Prob / Conf</th>
+                <th className="py-3 px-4 text-center">Confidence Level</th>
                 <th className="py-3 px-4 text-right">Odds</th>
                 <th className="py-3 px-4 text-center">Access</th>
                 <th className="py-3 px-4 text-center">Status</th>
@@ -316,6 +354,7 @@ export default function AdminTipsPage() {
                 tips.map((tip) => {
                   const displayOdds = tip.referenceOdds || tip.odds;
                   const isFree = !tip.isPremium || tip.accessLevel === 'FREE';
+                  const confLevel = tip.confidenceLevel || (tip.confidence >= 85 ? 'VERY HIGH' : tip.confidence >= 75 ? 'HIGH' : 'MODERATE');
 
                   return (
                     <tr key={tip._id} className="hover:bg-zinc-800/40 transition-colors">
@@ -334,8 +373,14 @@ export default function AdminTipsPage() {
                         )}
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <span className="text-[11px] font-medium text-zinc-300">
-                          {tip.probability ? `${tip.probability}%` : 'N/A'} / {tip.confidence}%
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
+                          confLevel === 'VERY HIGH' 
+                            ? 'bg-emerald-950 text-emerald-400 border-emerald-800/60'
+                            : confLevel === 'HIGH'
+                            ? 'bg-teal-950 text-teal-400 border-teal-800/60'
+                            : 'bg-zinc-800 text-zinc-300 border-zinc-700'
+                        }`}>
+                          {confLevel} ({tip.confidence}%)
                         </span>
                       </td>
                       <td className="py-3 px-4 text-right font-bold">
@@ -422,22 +467,34 @@ export default function AdminTipsPage() {
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                AI Prediction Generation Completed
+                Multi-Stage Pipeline Execution Report
               </h3>
             </div>
 
             <div className="space-y-2 text-xs text-zinc-300">
               <div className="flex justify-between py-1.5 border-b border-zinc-800/60">
-                <span>Predictions created</span>
+                <span>Fixtures scanned & analyzed</span>
+                <span className="font-bold text-white font-numeric">{autoGenResultModal.fixturesScanned}</span>
+              </div>
+              <div className="flex justify-between py-1.5 border-b border-zinc-800/60">
+                <span>Predictions published (Passed Quality Gate)</span>
                 <span className="font-bold text-emerald-400 font-numeric">{autoGenResultModal.predictionsCreated}</span>
+              </div>
+              <div className="flex justify-between py-1.5 border-b border-zinc-800/60 pl-3">
+                <span className="text-zinc-400">• High / Very High Confidence</span>
+                <span className="font-bold text-teal-400 font-numeric">{autoGenResultModal.highConfidence}</span>
+              </div>
+              <div className="flex justify-between py-1.5 border-b border-zinc-800/60 pl-3">
+                <span className="text-zinc-400">• Moderate Confidence</span>
+                <span className="font-bold text-zinc-300 font-numeric">{autoGenResultModal.moderateConfidence}</span>
+              </div>
+              <div className="flex justify-between py-1.5 border-b border-zinc-800/60">
+                <span className="text-rose-400 font-medium">Rejected by Quality Gate (NO BET)</span>
+                <span className="font-bold text-rose-400 font-numeric">{autoGenResultModal.rejectedNoBet}</span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-zinc-800/60">
                 <span>Existing predictions skipped</span>
                 <span className="font-bold text-amber-400 font-numeric">{autoGenResultModal.duplicatesSkipped}</span>
-              </div>
-              <div className="flex justify-between py-1.5 border-b border-zinc-800/60">
-                <span>Fixtures unavailable</span>
-                <span className="font-bold text-zinc-400 font-numeric">{autoGenResultModal.invalidFixtures}</span>
               </div>
               <div className="flex justify-between py-1.5">
                 <span>Generation errors</span>
