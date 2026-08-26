@@ -6,22 +6,6 @@ const CACHE_TTL = 30 * 1000;
 
 const ESPN_SOCCER_BASE = 'https://site.api.espn.com/apis/site/v2/sports/soccer';
 
-// Specific major league codes for rich multi-league coverage
-const LEAGUE_CODES = [
-  'all',
-  'eng.1',
-  'esp.1',
-  'ita.1',
-  'ger.1',
-  'fra.1',
-  'uefa.champions',
-  'uefa.europa',
-  'usa.1',
-  'conmebol.libertadores',
-  'eng.league_cup',
-  'eng.2'
-];
-
 function formatDateYYYYMMDD(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -49,7 +33,14 @@ function normalizeEspnEvent(event: any, leagueFallback: string = 'Football') {
     shortStatus = 'NS';
   }
 
-  const elapsed = state === 'in' ? Math.round(comp.status?.clock || 0) : state === 'post' ? 90 : null;
+  // ESPN clock is provided in SECONDS (e.g. 600.0s = 10 mins). Convert to minutes!
+  const rawClockSeconds = comp.status?.clock;
+  const elapsedMinutes = state === 'in'
+    ? (rawClockSeconds !== undefined && rawClockSeconds !== null ? Math.floor(rawClockSeconds / 60) : null)
+    : state === 'post' ? 90 : null;
+
+  const displayClock = statusType.shortDetail || statusType.detail || (elapsedMinutes !== null ? `${elapsedMinutes}'` : '');
+
   const homeScore = state !== 'pre' && homeComp?.score !== undefined ? parseInt(homeComp.score, 10) : null;
   const awayScore = state !== 'pre' && awayComp?.score !== undefined ? parseInt(awayComp.score, 10) : null;
 
@@ -59,29 +50,35 @@ function normalizeEspnEvent(event: any, leagueFallback: string = 'Football') {
     leagueName = event.league?.name || leagueFallback;
   }
 
+  // Extract team and league logos cleanly
+  const homeLogo = homeComp?.team?.logo || homeComp?.team?.logos?.[0]?.href || '';
+  const awayLogo = awayComp?.team?.logo || awayComp?.team?.logos?.[0]?.href || '';
+  const leagueLogo = event.league?.logo || event.league?.logos?.[0]?.href || comp.league?.logos?.[0]?.href || '';
+
   return {
     fixture: {
       id: String(event.id),
       status: {
-        elapsed: isNaN(elapsed as any) ? null : elapsed,
+        elapsed: elapsedMinutes,
+        displayClock: displayClock,
         short: shortStatus,
-        detail: statusType.shortDetail || statusType.detail || '',
+        detail: displayClock,
         state: state
       },
       date: event.date || comp.date,
     },
     league: {
       name: leagueName,
-      logo: event.league?.logo || 'https://a.espncdn.com/i/teamlogos/leagues/500/all.png',
+      logo: leagueLogo,
     },
     teams: {
       home: {
         name: homeComp?.team?.displayName || homeComp?.team?.name || 'Home Team',
-        logo: homeComp?.team?.logo || 'https://a.espncdn.com/i/teamlogos/soccer/500/default-team-logo.png',
+        logo: homeLogo,
       },
       away: {
         name: awayComp?.team?.displayName || awayComp?.team?.name || 'Away Team',
-        logo: awayComp?.team?.logo || 'https://a.espncdn.com/i/teamlogos/soccer/500/default-team-logo.png',
+        logo: awayLogo,
       },
     },
     goals: {
@@ -115,7 +112,7 @@ async function aggregateEspnFixtures(dateStrings: string[]): Promise<any[]> {
     // Universal scoreboard for date
     promises.push(fetchEspnScoreboard(`all/scoreboard?dates=${dateStr}&limit=500`));
 
-    // Selective top leagues for date to ensure deep coverage up to 400+ games
+    // Selective top leagues for date to ensure deep coverage
     for (const code of ['eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1', 'uefa.champions']) {
       promises.push(fetchEspnScoreboard(`${code}/scoreboard?dates=${dateStr}&limit=100`));
     }

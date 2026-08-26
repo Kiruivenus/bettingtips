@@ -190,7 +190,12 @@ export const LiveScoresContent = () => {
                 {/* Sticky League Header */}
                 <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-800/80 sticky top-16 bg-zinc-950/90 backdrop-blur-md z-20 py-2">
                   {group.leagueLogo && (
-                    <img src={group.leagueLogo} alt={leagueName} className="w-4 h-4 object-contain" />
+                    <img 
+                      src={group.leagueLogo} 
+                      alt={leagueName} 
+                      className="w-4 h-4 object-contain" 
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
                   )}
                   <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-200">{leagueName}</h3>
                   <span className="text-[10px] font-numeric text-zinc-500 font-medium">({group.items.length})</span>
