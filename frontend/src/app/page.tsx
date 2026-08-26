@@ -14,7 +14,7 @@ interface Tip {
   league: string;
   prediction: string;
   odds: number;
-  status: 'pending' | 'won' | 'lost';
+  status: 'pending' | 'won' | 'lost' | 'UPCOMING' | 'ACTIVE' | 'LOCKED' | 'COMPLETED' | 'VOID';
   isPremium: boolean;
   matchDate: string;
   confidence: number;
@@ -63,10 +63,11 @@ export default function LandingPage() {
     fetchData();
   }, []);
 
-  const freeTips = tips.filter(t => !t.isPremium && t.status === 'pending').slice(0, 5);
+  const isPendingStatus = (s: string) => s === 'pending' || s === 'UPCOMING' || s === 'ACTIVE' || s === 'LOCKED';
+  const freeTips = tips.filter(t => (!t.isPremium || (t as any).accessLevel === 'FREE') && isPendingStatus(t.status)).slice(0, 5);
   const premiumTips = tips.filter(t => t.isPremium).slice(0, 5);
   const recentResults = tips
-    .filter(t => t.status === 'won' || t.status === 'lost')
+    .filter(t => t.status === 'won' || t.status === 'lost' || t.status === 'COMPLETED' || t.status === 'VOID')
     .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
     .slice(0, 6);
 

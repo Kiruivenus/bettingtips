@@ -13,8 +13,9 @@ interface Tip {
   league: string;
   prediction: string;
   odds: number;
-  status: 'pending' | 'won' | 'lost';
+  status: 'pending' | 'won' | 'lost' | 'UPCOMING' | 'ACTIVE' | 'LOCKED' | 'COMPLETED' | 'VOID';
   isPremium: boolean;
+  accessLevel?: string;
   matchDate: string;
   result?: string;
   planIds?: Array<{ _id: string; name: string }> | string[];
@@ -58,7 +59,7 @@ export default function GamesPage() {
           const tipsData = await tipsRes.json();
           if (Array.isArray(tipsData)) {
             if (isFree) {
-              setTips(tipsData.filter((t: Tip) => !t.isPremium));
+              setTips(tipsData.filter((t: Tip) => !t.isPremium || t.accessLevel === 'FREE'));
             } else {
               setTips(tipsData.filter((t: Tip) => {
                 if (!t.planIds) return false;
@@ -88,8 +89,11 @@ export default function GamesPage() {
     fetchData();
   }, [planId, isFree, user]);
 
-  const pendingTips = tips.filter(t => t.status === 'pending');
-  const pastTips = tips.filter(t => t.status === 'won' || t.status === 'lost');
+  const isPendingStatus = (s: string) => s === 'pending' || s === 'UPCOMING' || s === 'ACTIVE' || s === 'LOCKED';
+  const isPastStatus = (s: string) => s === 'won' || s === 'lost' || s === 'COMPLETED' || s === 'VOID';
+
+  const pendingTips = tips.filter(t => isPendingStatus(t.status));
+  const pastTips = tips.filter(t => isPastStatus(t.status));
 
   const planName = isFree ? 'Free Tips' : (plan?.name || 'Premium Plan');
   const planDescription = isFree

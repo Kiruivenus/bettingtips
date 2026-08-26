@@ -13,8 +13,9 @@ interface Tip {
   league: string;
   prediction: string;
   odds: number;
-  status: 'pending' | 'won' | 'lost';
+  status: 'pending' | 'won' | 'lost' | 'UPCOMING' | 'ACTIVE' | 'LOCKED' | 'COMPLETED' | 'VOID';
   isPremium: boolean;
+  accessLevel?: string;
   matchDate: string;
   confidence: number;
   planIds?: Array<{ _id: string; name: string }> | string[];
@@ -32,7 +33,9 @@ export default function FreeTipsPage() {
         const res = await fetch(`${API_URL}/api/tips`);
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data)) setTips(data.filter((t: Tip) => !t.isPremium));
+          if (Array.isArray(data)) {
+            setTips(data.filter((t: Tip) => !t.isPremium || t.accessLevel === 'FREE'));
+          }
         }
       } catch (e) {
         console.error(e);
@@ -53,8 +56,10 @@ export default function FreeTipsPage() {
     return matchesSearch && matchesLeague;
   });
 
-  const pendingTips = filteredTips.filter(t => t.status === 'pending');
-  const settledTips = filteredTips.filter(t => t.status !== 'pending');
+  const isPendingStatus = (s: string) => s === 'pending' || s === 'UPCOMING' || s === 'ACTIVE' || s === 'LOCKED';
+
+  const pendingTips = filteredTips.filter(t => isPendingStatus(t.status));
+  const settledTips = filteredTips.filter(t => !isPendingStatus(t.status));
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">
@@ -136,7 +141,7 @@ export default function FreeTipsPage() {
                             </span>
                           </td>
                           <td className="py-3 px-4 text-right font-bold text-emerald-400">
-                            {tip.odds.toFixed(2)}
+                            {tip.odds ? tip.odds.toFixed(2) : 'N/A'}
                           </td>
                           <td className="py-3 px-4 text-center">
                             <span className="px-2 py-0.5 rounded bg-zinc-950 text-zinc-400 border border-zinc-800 text-[10px]">
@@ -192,9 +197,9 @@ export default function FreeTipsPage() {
                           </td>
                           <td className="py-3 px-4 font-medium text-zinc-200">{tip.match}</td>
                           <td className="py-3 px-4 text-zinc-300">{tip.prediction}</td>
-                          <td className="py-3 px-4 text-right font-medium text-zinc-300">{tip.odds.toFixed(2)}</td>
+                          <td className="py-3 px-4 text-right font-medium text-zinc-300">{tip.odds ? tip.odds.toFixed(2) : 'N/A'}</td>
                           <td className="py-3 px-4 text-center">
-                            {tip.status === 'won' ? (
+                            {tip.status === 'won' || tip.status === 'COMPLETED' ? (
                               <span className="px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-bold text-[10px]">
                                 WON
                               </span>

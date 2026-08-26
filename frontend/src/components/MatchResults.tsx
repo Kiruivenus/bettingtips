@@ -6,7 +6,7 @@ interface Tip {
   league: string;
   prediction: string;
   odds: number;
-  status: 'pending' | 'won' | 'lost';
+  status: 'pending' | 'won' | 'lost' | 'UPCOMING' | 'ACTIVE' | 'LOCKED' | 'COMPLETED' | 'VOID';
   isPremium: boolean;
   matchDate: string;
   confidence?: number;
@@ -66,16 +66,20 @@ export const MatchResults: React.FC<MatchResultsProps> = ({ tips, showPlanBadge 
                   </span>
                 </td>
                 <td className="py-3 px-4 text-right font-bold text-emerald-400 whitespace-nowrap">
-                  {tip.odds.toFixed(2)}
+                  {tip.odds ? tip.odds.toFixed(2) : 'N/A'}
                 </td>
                 <td className="py-3 px-4 text-center whitespace-nowrap">
-                  {tip.status === 'won' ? (
+                  {tip.status === 'won' || tip.status === 'COMPLETED' ? (
                     <span className="px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-bold text-[10px]">
-                      WON
+                      WON {tip.result ? `(${tip.result})` : ''}
                     </span>
                   ) : tip.status === 'lost' ? (
                     <span className="px-2.5 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800/60 font-bold text-[10px]">
-                      LOST
+                      LOST {tip.result ? `(${tip.result})` : ''}
+                    </span>
+                  ) : tip.status === 'LOCKED' ? (
+                    <span className="px-2.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800/60 font-bold text-[10px]">
+                      LOCKED
                     </span>
                   ) : (
                     <span className="px-2.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 text-[10px]">

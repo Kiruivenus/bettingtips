@@ -10,8 +10,9 @@ interface Tip {
   league: string;
   prediction: string;
   odds: number;
-  status: 'pending' | 'won' | 'lost';
+  status: 'pending' | 'won' | 'lost' | 'UPCOMING' | 'ACTIVE' | 'LOCKED' | 'COMPLETED' | 'VOID';
   isPremium: boolean;
+  accessLevel?: string;
   matchDate: string;
   result?: string;
 }
@@ -26,7 +27,9 @@ export default function DashboardFreeTipsPage() {
         const res = await fetch(`${API_URL}/api/tips`);
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data)) setTips(data.filter((t: Tip) => !t.isPremium));
+          if (Array.isArray(data)) {
+            setTips(data.filter((t: Tip) => !t.isPremium || t.accessLevel === 'FREE'));
+          }
         }
       } catch (e) {
         console.error(e);
@@ -37,13 +40,16 @@ export default function DashboardFreeTipsPage() {
     fetchTips();
   }, []);
 
-  const pendingTips = tips.filter(t => t.status === 'pending');
+  const isPendingStatus = (s: string) => s === 'pending' || s === 'UPCOMING' || s === 'ACTIVE' || s === 'LOCKED';
+  const isPastStatus = (s: string) => s === 'won' || s === 'lost' || s === 'COMPLETED' || s === 'VOID';
+
+  const pendingTips = tips.filter(t => isPendingStatus(t.status));
   const pastTips = tips
-    .filter(t => t.status === 'won' || t.status === 'lost')
+    .filter(t => isPastStatus(t.status))
     .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
 
   const totalResolved = pastTips.length;
-  const wins = pastTips.filter(t => t.status === 'won').length;
+  const wins = pastTips.filter(t => t.status === 'won' || t.status === 'COMPLETED').length;
   const successRate = totalResolved > 0 ? Math.round((wins / totalResolved) * 100) : 0;
 
   return (
@@ -73,35 +79,35 @@ export default function DashboardFreeTipsPage() {
       </header>
 
       <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-12">
-      {/* Today's Free Tips */}
-      <section>
-        <h2 className="text-2xl font-extrabold text-white mb-6">Today's Picks</h2>
-        {loading ? (
-          <div className="space-y-4">
-             {[1, 2, 3].map(i => <div key={i} className="h-16 bg-white/5 animate-pulse rounded-2xl" />)}
-          </div>
-        ) : pendingTips.length > 0 ? (
-          <MatchResults tips={pendingTips} showPlanBadge={false} />
-        ) : (
-          <div className="text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
-            <p className="text-zinc-400">No active free tips right now. Check back soon!</p>
-          </div>
-        )}
-      </section>
+        {/* Today's Free Tips */}
+        <section>
+          <h2 className="text-2xl font-extrabold text-white mb-6">Today's Picks</h2>
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => <div key={i} className="h-16 bg-white/5 animate-pulse rounded-2xl" />)}
+            </div>
+          ) : pendingTips.length > 0 ? (
+            <MatchResults tips={pendingTips} showPlanBadge={false} />
+          ) : (
+            <div className="text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
+              <p className="text-zinc-400">No active free tips right now. Check back soon!</p>
+            </div>
+          )}
+        </section>
 
-      {/* Past Results */}
-      <section>
-        <h2 className="text-2xl font-extrabold text-white mb-6">Past Results</h2>
-        {loading ? (
-          <div className="space-y-4">{[1, 2, 3, 4, 5].map(i => <div key={i} className="h-16 bg-white/5 animate-pulse rounded-xl" />)}</div>
-        ) : pastTips.length > 0 ? (
-          <MatchResults tips={pastTips} showPlanBadge={false} />
-        ) : (
-          <div className="text-center py-12 border border-white/5 rounded-2xl bg-white/5 text-zinc-500">
-            No past results yet.
-          </div>
-        )}
-      </section>
+        {/* Past Results */}
+        <section>
+          <h2 className="text-2xl font-extrabold text-white mb-6">Past Results</h2>
+          {loading ? (
+            <div className="space-y-4">{[1, 2, 3, 4, 5].map(i => <div key={i} className="h-16 bg-white/5 animate-pulse rounded-xl" />)}</div>
+          ) : pastTips.length > 0 ? (
+            <MatchResults tips={pastTips} showPlanBadge={false} />
+          ) : (
+            <div className="text-center py-12 border border-white/5 rounded-2xl bg-white/5 text-zinc-500">
+              No past results yet.
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );
