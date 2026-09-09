@@ -118,7 +118,7 @@ export default function GamesPage() {
             </div>
             <h2 className="text-xl font-bold text-white mb-2">VIP Membership Required</h2>
             <p className="text-zinc-400 text-sm mb-6 max-w-sm">Upgrade to a VIP membership package to unlock unmasked predictions and full AI match analysis.</p>
-            <Link href="/buy-tips" className="inline-flex items-center justify-center h-11 px-8 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold text-sm transition-colors shadow-lg">
+            <Link href={`/dashboard/plans?planId=${planId}`} className="inline-flex items-center justify-center h-11 px-8 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold text-sm transition-colors shadow-lg">
               Unlock VIP Membership
             </Link>
           </div>

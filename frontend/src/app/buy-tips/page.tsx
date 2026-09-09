@@ -115,7 +115,7 @@ export default function BuyTipsPage() {
 
                     <div className="pt-2">
                       {user ? (
-                        <Link href={`/dashboard?checkoutPlan=${plan._id}`} className="block">
+                        <Link href={`/dashboard/plans?planId=${plan._id}`} className="block">
                           <Button
                             variant={isPopular ? 'primary' : 'secondary'}
                             size="md"

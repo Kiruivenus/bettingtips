@@ -354,7 +354,7 @@ export default function LandingPage() {
                         </ul>
                       </div>
 
-                      <Link href={`/buy-tips?plan=${plan._id}`} className="block">
+                      <Link href={`/dashboard/plans?planId=${plan._id}`} className="block">
                         <Button
                           variant={isPopular ? 'primary' : 'secondary'}
                           size="md"

@@ -76,7 +76,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <Link href="/buy-tips">
+        <Link href="/dashboard/plans">
           <Button variant={isSubscriptionActive ? 'secondary' : 'primary'} size="sm">
             {isSubscriptionActive ? 'Extend Membership' : 'Upgrade to VIP'}
           </Button>
@@ -158,7 +158,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
 
-                <Link href={`/buy-tips?plan=${plan._id}`}>
+                <Link href={`/dashboard/plans?planId=${plan._id}`}>
                   <Button variant="outline" size="sm" className="w-full">
                     Unlock Package Access
                   </Button>
