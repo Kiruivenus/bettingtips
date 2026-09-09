@@ -30,8 +30,14 @@ export default function DashboardResultsPage() {
         const res = await fetch(`${API_URL}/api/tips`);
         if (res.ok) {
           const data = await res.json();
-          // Only show won/lost tips on the results page
-          const filtered = data.filter((t: Tip) => t.status === 'won' || t.status === 'lost');
+          // Filter results: Won VIP games (with plan names) & all settled Free games (won + lost)
+          const filtered = data.filter((t: any) => {
+            const isFree = !t.isPremium || t.accessLevel === 'FREE';
+            const isWon = t.status === 'won' || t.status === 'COMPLETED';
+            const isLost = t.status === 'lost';
+            return isFree ? (isWon || isLost) : isWon;
+          }).sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
+
           setTips(filtered);
         }
       } catch (e) {

@@ -67,7 +67,12 @@ export default function LandingPage() {
   const freeTips = tips.filter(t => (!t.isPremium || (t as any).accessLevel === 'FREE') && isPendingStatus(t.status)).slice(0, 5);
   const premiumTips = tips.filter(t => t.isPremium).slice(0, 5);
   const recentResults = tips
-    .filter(t => t.status === 'won' || t.status === 'lost' || t.status === 'COMPLETED' || t.status === 'VOID')
+    .filter(t => {
+      const isFree = !t.isPremium || (t as any).accessLevel === 'FREE';
+      const isWon = t.status === 'won' || t.status === 'COMPLETED';
+      const isLost = t.status === 'lost';
+      return isFree ? (isWon || isLost) : isWon;
+    })
     .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
     .slice(0, 6);
 
@@ -384,31 +389,47 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {recentResults.map((res) => (
-                <div
-                  key={res._id}
-                  className="p-4 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-between text-xs"
-                >
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium">{res.league}</span>
-                    <p className="font-semibold text-zinc-200">{res.match}</p>
-                    <p className="text-zinc-400 text-[11px]">Pick: <span className="text-zinc-200 font-medium">{res.prediction}</span> @ <span className="font-numeric font-medium">{res.odds.toFixed(2)}</span></p>
+              {recentResults.map((res) => {
+                const isFree = !res.isPremium || (res as any).accessLevel === 'FREE';
+                const planName = Array.isArray(res.planIds) && res.planIds.length > 0
+                  ? res.planIds.map((p: any) => typeof p === 'object' && p?.name ? p.name : p).join(', ')
+                  : 'VIP PLAN';
+
+                return (
+                  <div
+                    key={res._id}
+                    className="p-4 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-between text-xs gap-3"
+                  >
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium">{res.league}</span>
+                        {!isFree ? (
+                          <span className="px-1.5 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800/60 text-[9px] font-bold uppercase tracking-wider">
+                            {planName}
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700 text-[9px] font-semibold uppercase tracking-wider">
+                            FREE PICK
+                          </span>
+                        )}
+                      </div>
+                      <p className="font-semibold text-zinc-200 truncate">{res.match}</p>
+                      <p className="text-zinc-400 text-[11px]">Pick: <span className="text-zinc-200 font-medium">{res.prediction}</span> @ <span className="font-numeric font-medium">{res.odds.toFixed(2)}</span></p>
+                    </div>
+                    <div className="shrink-0">
+                      {res.status === 'won' || res.status === 'COMPLETED' ? (
+                        <span className="px-2.5 py-1 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-bold text-xs">
+                          WON
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded bg-rose-950 text-rose-400 border border-rose-800/60 font-bold text-xs">
+                          LOST
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    {res.status === 'won' ? (
-                      <span className="px-2.5 py-1 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-bold text-xs">
-                        WON
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-1 rounded bg-rose-950 text-rose-400 border border-rose-800/60 font-bold text-xs">
-                        LOST
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+                );
+              })}
           </div>
         </section>
 

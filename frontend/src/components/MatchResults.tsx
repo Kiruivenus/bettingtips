@@ -70,12 +70,20 @@ export const MatchResults: React.FC<MatchResultsProps> = ({ tips, showPlanBadge 
                     </td>
                     <td className="py-3 px-4 font-semibold text-zinc-100">
                       <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span>{tip.match}</span>
-                          {showPlanBadge && tip.isPremium && (
-                            <span className="px-1.5 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800/50 text-[9px] font-bold uppercase">
-                              VIP
-                            </span>
+                          {showPlanBadge && (
+                            tip.isPremium || (tip as any).accessLevel === 'VIP' ? (
+                              <span className="px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800/60 text-[9px] font-bold uppercase tracking-wider">
+                                {Array.isArray(tip.planIds) && tip.planIds.length > 0
+                                  ? tip.planIds.map((p: any) => typeof p === 'object' && p?.name ? p.name : p).join(', ')
+                                  : 'VIP PLAN'}
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700 text-[9px] font-semibold uppercase tracking-wider">
+                                FREE PICK
+                              </span>
+                            )
                           )}
                         </div>
                         {hasFactors && (
