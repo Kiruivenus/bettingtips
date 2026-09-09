@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Tip from '../models/Tip';
 import { AuthRequest } from '../middlewares/authMiddleware';
+import { settleAndLockFixtures } from './aiPredictionController';
 
 // Reusable function to check if user has active premium subscription
 export const hasActivePremium = (req: AuthRequest): boolean => {
@@ -12,11 +13,14 @@ export const hasActivePremium = (req: AuthRequest): boolean => {
   return false;
 };
 
-// @desc    Get all tips with server-side VIP entitlement & 3 free tips/day enforcement
+// @desc    Get all tips with server-side VIP entitlement & auto-settlement check
 // @route   GET /api/tips
 // @access  Public / Authenticated
 export const getTips = async (req: AuthRequest, res: Response) => {
   try {
+    // Automatically trigger settlement for past matches to update results page
+    await settleAndLockFixtures();
+
     const tips = await Tip.find({}).sort({ matchDate: -1 }).populate('planIds', 'name');
     const isPremiumUser = hasActivePremium(req);
 
