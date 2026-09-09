@@ -57,9 +57,10 @@ export default function FreeTipsPage() {
   });
 
   const isPendingStatus = (s: string) => s === 'pending' || s === 'UPCOMING' || s === 'ACTIVE' || s === 'LOCKED';
+  const isUpcoming = (t: Tip) => isPendingStatus(t.status) && new Date(t.matchDate).getTime() > Date.now();
 
-  const pendingTips = filteredTips.filter(t => isPendingStatus(t.status)).slice(0, 5);
-  const settledTips = filteredTips.filter(t => !isPendingStatus(t.status));
+  const pendingTips = filteredTips.filter(isUpcoming).slice(0, 5);
+  const settledTips = filteredTips.filter(t => !isUpcoming(t));
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">

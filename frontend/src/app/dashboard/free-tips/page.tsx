@@ -41,11 +41,11 @@ export default function DashboardFreeTipsPage() {
   }, []);
 
   const isPendingStatus = (s: string) => s === 'pending' || s === 'UPCOMING' || s === 'ACTIVE' || s === 'LOCKED';
-  const isPastStatus = (s: string) => s === 'won' || s === 'lost' || s === 'COMPLETED' || s === 'VOID';
+  const isUpcoming = (t: Tip) => isPendingStatus(t.status) && new Date(t.matchDate).getTime() > Date.now();
 
-  const pendingTips = tips.filter(t => isPendingStatus(t.status)).slice(0, 5);
+  const pendingTips = tips.filter(isUpcoming).slice(0, 5);
   const pastTips = tips
-    .filter(t => isPastStatus(t.status))
+    .filter(t => !isUpcoming(t))
     .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
 
   const totalResolved = pastTips.length;

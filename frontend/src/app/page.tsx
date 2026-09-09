@@ -64,7 +64,8 @@ export default function LandingPage() {
   }, []);
 
   const isPendingStatus = (s: string) => s === 'pending' || s === 'UPCOMING' || s === 'ACTIVE' || s === 'LOCKED';
-  const freeTips = tips.filter(t => (!t.isPremium || (t as any).accessLevel === 'FREE') && isPendingStatus(t.status)).slice(0, 5);
+  const isUpcoming = (t: Tip) => isPendingStatus(t.status) && new Date(t.matchDate).getTime() > Date.now();
+  const freeTips = tips.filter(t => (!t.isPremium || (t as any).accessLevel === 'FREE') && isUpcoming(t)).slice(0, 5);
   const premiumTips = tips.filter(t => t.isPremium).slice(0, 5);
   const recentResults = tips
     .filter(t => {

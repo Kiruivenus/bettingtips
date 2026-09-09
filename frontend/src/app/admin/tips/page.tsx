@@ -89,7 +89,17 @@ export default function AdminTipsPage() {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
-      if (Array.isArray(data)) setTips(data);
+      if (Array.isArray(data)) {
+        // Sort upcoming future matches first, then settled past matches
+        const sorted = data.sort((a: any, b: any) => {
+          const aFuture = new Date(a.matchDate).getTime() > Date.now();
+          const bFuture = new Date(b.matchDate).getTime() > Date.now();
+          if (aFuture && !bFuture) return -1;
+          if (!aFuture && bFuture) return 1;
+          return new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime();
+        });
+        setTips(sorted);
+      }
     } catch (error) {
       showToast('Error fetching tips', 'error');
     } finally {

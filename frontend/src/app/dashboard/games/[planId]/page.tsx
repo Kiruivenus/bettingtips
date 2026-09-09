@@ -88,12 +88,12 @@ export default function GamesPage() {
   }, [planId, isFree, user]);
 
   const isPendingStatus = (s: string) => s === 'pending' || s === 'UPCOMING' || s === 'ACTIVE' || s === 'LOCKED';
-  const isPastStatus = (s: string) => s === 'won' || s === 'lost' || s === 'COMPLETED' || s === 'VOID';
+  const isUpcoming = (t: Tip) => isPendingStatus(t.status) && new Date(t.matchDate).getTime() > Date.now();
 
   const pendingTips = isFree
-    ? tips.filter(t => isPendingStatus(t.status)).slice(0, 5)
-    : tips.filter(t => isPendingStatus(t.status));
-  const pastTips = tips.filter(t => isPastStatus(t.status));
+    ? tips.filter(isUpcoming).slice(0, 5)
+    : tips.filter(isUpcoming);
+  const pastTips = tips.filter(t => !isUpcoming(t));
 
   const planName = isFree ? 'Free Tips' : (plan?.name || 'VIP Premium Predictions');
   const planDescription = isFree
