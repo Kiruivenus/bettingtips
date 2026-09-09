@@ -183,44 +183,44 @@ function PlansPageContent() {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 relative overflow-x-hidden">
-      <header className="md:sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-6 mb-8 text-center max-w-none">
-        <h1 className="text-3xl font-bold tracking-tight text-white mb-2">
+      <header className="md:sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 md:px-8 py-4 mb-6 text-center max-w-none">
+        <h1 className="text-2xl font-bold tracking-tight text-white mb-1">
           {planIdParam ? 'Complete Your Subscription' : 'Elite Betting Plans'}
         </h1>
-        <p className="text-zinc-400 text-sm max-w-2xl mx-auto">
+        <p className="text-zinc-400 text-xs sm:text-sm max-w-xl mx-auto">
           {planIdParam 
             ? 'Selected plan details and secure payment options.' 
-            : 'Choose the perfect plan to elevate your betting strategy with our expert predictions and analysis.'}
+            : 'Choose the perfect plan to elevate your betting strategy with expert predictions.'}
         </p>
         {planIdParam && (
           <button 
             onClick={() => router.push('/dashboard/plans')}
-            className="mt-4 text-emerald-400 hover:text-emerald-300 group inline-flex items-center gap-2 text-sm font-bold"
+            className="mt-2 text-emerald-400 hover:text-emerald-300 group inline-flex items-center gap-1.5 text-xs font-bold"
           >
-            <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+            <svg className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             View All Plans
           </button>
         )}
       </header>
 
-      <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-8">
+      <div className="px-4 sm:px-6 md:px-8 pb-8 space-y-6">
       {loading ? (
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-96 rounded-3xl bg-white/5 border border-white/5 animate-pulse" />
+            <div key={i} className="h-80 rounded-2xl bg-white/5 border border-white/5 animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto items-center">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto items-stretch">
           {filteredPlans.map((plan, index) => {
             const isPopular = index === 1 || plan.name.toLowerCase().includes('pro');
             
             return (
               <div 
                 key={plan._id} 
-                className={`relative overflow-hidden rounded-3xl border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl flex flex-col
+                className={`relative overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col
                   ${isPopular 
-                    ? 'bg-gradient-to-b from-emerald-500/20 to-black/60 border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)] md:-mt-8 md:mb-8' 
+                    ? 'bg-gradient-to-b from-emerald-500/20 to-black/60 border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.12)]' 
                     : 'bg-white/5 border-white/10 hover:border-white/20 backdrop-blur-xl'
                   }
                 `}
@@ -229,29 +229,29 @@ function PlansPageContent() {
                   <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-400 to-emerald-600" />
                 )}
                 {isPopular && (
-                  <div className="absolute top-4 right-4 bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider py-1 px-3 rounded-full border border-emerald-500/30">
+                  <div className="absolute top-3 right-3 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider py-0.5 px-2.5 rounded-full border border-emerald-500/30">
                     Most Popular
                   </div>
                 )}
                 
-                <div className="p-8 flex-1">
-                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                  <div className="flex items-baseline mb-6">
-                    <span className="text-4xl font-extrabold text-white">${plan.price}</span>
-                    <span className="text-zinc-500 ml-2 font-medium">/{plan.durationInDays} days</span>
+                <div className="p-5 flex-1">
+                  <h3 className="text-lg font-bold text-white mb-1">{plan.name}</h3>
+                  <div className="flex items-baseline mb-4">
+                    <span className="text-3xl font-extrabold text-white">${plan.price}</span>
+                    <span className="text-zinc-400 ml-1.5 text-xs font-medium">/{plan.durationInDays} days</span>
                   </div>
                   
-                  <ul className="space-y-4 mb-8">
+                  <ul className="space-y-2 mb-4">
                     {plan.features?.map((feature, i) => (
-                      <li key={i} className="flex items-start text-sm text-zinc-300">
-                        <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <li key={i} className="flex items-start text-xs text-zinc-300">
+                        <svg className="w-4 h-4 text-emerald-400 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                         <span>{feature}</span>
                       </li>
                     ))}
-                    <li className="flex items-start text-sm text-zinc-300">
-                      <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <li className="flex items-start text-xs text-zinc-300">
+                      <svg className="w-4 h-4 text-emerald-400 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                       <span>24/7 Dedicated Support</span>
@@ -259,18 +259,19 @@ function PlansPageContent() {
                   </ul>
                 </div>
                 
-                <div className="p-8 pt-0 mt-auto space-y-3">
+                <div className="p-5 pt-0 mt-auto space-y-2">
                   {isMethodEnabled('stripe') && (
                     <Button 
                       variant={isPopular ? 'primary' : 'outline'}
-                      className="w-full flex justify-center items-center"
+                      size="sm"
+                      className="w-full flex justify-center items-center text-xs py-2"
                       isLoading={processingId === `${plan._id}-stripe`}
                       onClick={() => handleStripeCheckout(plan._id)}
                       disabled={!!processingId}
                     >
                       {!processingId || processingId === `${plan._id}-stripe` ? (
                         <>
-                          <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.143-3.356-2.077 0-.741.745-1.284 1.848-1.284 1.558 0 2.879.626 3.655 1.107l1.018-3.153C16.155 3.09 14.509 2.5 12.636 2.5 8.799 2.5 6.2 4.675 6.2 7.749c0 4.14 6.264 3.737 6.264 5.568 0 .899-1.01 1.408-2.228 1.408-1.748 0-3.385-.758-4.329-1.39l-1.077 3.205c1.137.669 3.065 1.258 5.176 1.258 4.09 0 6.643-2.106 6.643-5.228 0-4.475-6.671-3.69-6.671-5.412M24 11.235c0-4.81-3.921-8.735-8.735-8.735S6.529 6.424 6.529 11.235 10.45 19.97 15.265 19.97 24 16.046 24 11.235z" opacity=".05"/><path d="M13.976 9.15c-2.172-.806-3.356-1.143-3.356-2.077 0-.741.745-1.284 1.848-1.284 1.558 0 2.879.626 3.655 1.107l1.018-3.153C16.155 3.09 14.509 2.5 12.636 2.5 8.799 2.5 6.2 4.675 6.2 7.749c0 4.14 6.264 3.737 6.264 5.568 0 .899-1.01 1.408-2.228 1.408-1.748 0-3.385-.758-4.329-1.39l-1.077 3.205c1.137.669 3.065 1.258 5.176 1.258 4.09 0 6.643-2.106 6.643-5.228 0-4.475-6.671-3.69-6.671-5.412" fill="currentColor"/></svg>
+                          <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.143-3.356-2.077 0-.741.745-1.284 1.848-1.284 1.558 0 2.879.626 3.655 1.107l1.018-3.153C16.155 3.09 14.509 2.5 12.636 2.5 8.799 2.5 6.2 4.675 6.2 7.749c0 4.14 6.264 3.737 6.264 5.568 0 .899-1.01 1.408-2.228 1.408-1.748 0-3.385-.758-4.329-1.39l-1.077 3.205c1.137.669 3.065 1.258 5.176 1.258 4.09 0 6.643-2.106 6.643-5.228 0-4.475-6.671-3.69-6.671-5.412M24 11.235c0-4.81-3.921-8.735-8.735-8.735S6.529 6.424 6.529 11.235 10.45 19.97 15.265 19.97 24 16.046 24 11.235z" opacity=".05"/><path d="M13.976 9.15c-2.172-.806-3.356-1.143-3.356-2.077 0-.741.745-1.284 1.848-1.284 1.558 0 2.879.626 3.655 1.107l1.018-3.153C16.155 3.09 14.509 2.5 12.636 2.5 8.799 2.5 6.2 4.675 6.2 7.749c0 4.14 6.264 3.737 6.264 5.568 0 .899-1.01 1.408-2.228 1.408-1.748 0-3.385-.758-4.329-1.39l-1.077 3.205c1.137.669 3.065 1.258 5.176 1.258 4.09 0 6.643-2.106 6.643-5.228 0-4.475-6.671-3.69-6.671-5.412" fill="currentColor"/></svg>
                           Pay with Card
                         </>
                       ) : ''}
@@ -278,11 +279,12 @@ function PlansPageContent() {
                   )}
                   
                   {(isMethodEnabled('paypal') || isMethodEnabled('mpesa')) && (
-                    <div className={`grid ${isMethodEnabled('paypal') && isMethodEnabled('mpesa') ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
+                    <div className={`grid ${isMethodEnabled('paypal') && isMethodEnabled('mpesa') ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
                       {isMethodEnabled('paypal') && (
                         <Button 
                           variant="secondary" 
-                          className="w-full text-xs px-2"
+                          size="sm"
+                          className="w-full text-xs py-1.5 px-2"
                           isLoading={processingId === `${plan._id}-paypal`}
                           onClick={() => handlePayPalCheckout(plan._id)}
                           disabled={!!processingId}
@@ -293,7 +295,8 @@ function PlansPageContent() {
                       {isMethodEnabled('mpesa') && (
                         <Button 
                           variant="secondary" 
-                          className="w-full text-xs px-2 bg-green-500/10 text-green-400 hover:bg-green-500/20 border-green-500/20 hover:border-green-500/30"
+                          size="sm"
+                          className="w-full text-xs py-1.5 px-2 bg-green-500/10 text-green-400 hover:bg-green-500/20 border-green-500/20 hover:border-green-500/30"
                           onClick={() => openMpesaModal(plan._id)}
                           disabled={!!processingId}
                         >
@@ -320,12 +323,12 @@ function PlansPageContent() {
                     const enabled = manualMethods.filter(m => isMethodEnabled(m.id));
                     if (enabled.length === 0) return null;
                     return (
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-1.5 pt-1">
                         {enabled.map(m => (
                           <button
                             key={m.id}
                             onClick={() => { setSelectedManualMethod(m.id); setSelectedPlanForManual(plan._id); setManualTxId(''); setManualStatus({ loading: false, error: '', success: '' }); setShowManualModal(true); }}
-                            className={`text-xs font-bold py-2 px-3 rounded-xl border transition-all ${m.color}`}
+                            className={`text-[11px] font-semibold py-1.5 px-2 rounded-lg border transition-all ${m.color}`}
                           >
                             {m.label}
                           </button>
@@ -335,7 +338,7 @@ function PlansPageContent() {
                   })()}
 
                   {!isMethodEnabled('stripe') && !isMethodEnabled('paypal') && !isMethodEnabled('mpesa') && !isMethodEnabled('manual') && !isMethodEnabled('skrill') && !isMethodEnabled('neteller') && !isMethodEnabled('crypto') && !isMethodEnabled('revolut') && !isMethodEnabled('wise') && (
-                    <p className="text-center text-zinc-500 text-xs py-2">No payment methods available. Contact support.</p>
+                    <p className="text-center text-zinc-500 text-xs py-1">No payment methods available. Contact support.</p>
                   )}
                 </div>
               </div>
