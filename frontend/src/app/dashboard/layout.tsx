@@ -40,7 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="flex min-h-screen bg-zinc-950 text-zinc-100 font-sans">
+    <div className="flex h-screen w-screen overflow-hidden bg-zinc-950 text-zinc-100 font-sans">
       
       {/* Mobile Backdrop */}
       {isMobileMenuOpen && (
@@ -51,7 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-60 border-r border-zinc-800 bg-zinc-950 md:static md:translate-x-0 transition-transform duration-200 flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-60 border-r border-zinc-800 bg-zinc-950 h-full flex flex-col shrink-0 md:static transition-transform duration-200 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="h-16 flex items-center justify-between px-5 border-b border-zinc-800 shrink-0">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 flex items-center justify-center bg-transparent border-0">
@@ -110,7 +110,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col h-full min-w-0 overflow-y-auto">
         {/* Mobile Header */}
         <div className="md:hidden h-14 shrink-0 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 sticky top-0 z-30">
           <div className="flex items-center gap-2">
