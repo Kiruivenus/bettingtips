@@ -12,10 +12,134 @@ const maskSecret = (value: string): string => {
 };
 
 // @desc    Get all payment settings (admin)
+const DEFAULT_METHODS: Array<{ method: string; isEnabled: boolean; settings: Record<string, string> }> = [
+  {
+    method: 'manual',
+    isEnabled: true,
+    settings: {
+      bankName: 'Elite Platinum Bank',
+      accountName: 'Platinum Picks LLC',
+      accountNumber: '0123456789',
+      instructions: 'Transfer exact amount to account above and submit your transaction reference.'
+    }
+  },
+  {
+    method: 'mpesa_manual',
+    isEnabled: true,
+    settings: {
+      phoneNumber: '254700000000',
+      accountName: 'Platinum Picks Admin',
+      instructions: 'Send money to M-Pesa number above and submit M-Pesa transaction ID.'
+    }
+  },
+  {
+    method: 'till',
+    isEnabled: true,
+    settings: {
+      tillNumber: '174379',
+      tillName: 'Platinum Picks VIP',
+      instructions: 'Buy Goods & Services -> Till Number 174379 -> Submit transaction code.'
+    }
+  },
+  {
+    method: 'airtel',
+    isEnabled: true,
+    settings: {
+      phoneNumber: '254733000000',
+      accountName: 'Platinum Picks Admin',
+      instructions: 'Send money via Airtel Money to number above and submit reference code.'
+    }
+  },
+  {
+    method: 'paypal_ff',
+    isEnabled: true,
+    settings: {
+      email: 'payments@elitetipspro.com',
+      instructions: 'Send via PayPal Friends & Family to email above and submit transaction ID.'
+    }
+  },
+  {
+    method: 'skrill',
+    isEnabled: true,
+    settings: {
+      email: 'payments@elitetipspro.com',
+      instructions: 'Transfer to Skrill email above and submit reference ID.'
+    }
+  },
+  {
+    method: 'neteller',
+    isEnabled: true,
+    settings: {
+      email: 'payments@elitetipspro.com',
+      instructions: 'Send Neteller payment to email above and submit reference.'
+    }
+  },
+  {
+    method: 'crypto',
+    isEnabled: true,
+    settings: {
+      walletAddress: '0x1234567890abcdef1234567890abcdef12345678',
+      network: 'USDT (TRC20)',
+      acceptedCoins: 'USDT, BTC, ETH',
+      instructions: 'Send payment to crypto wallet above and submit TX Hash.'
+    }
+  },
+  {
+    method: 'revolut',
+    isEnabled: true,
+    settings: {
+      username: '@elitetipspro',
+      instructions: 'Send payment to Revolut Revtag @elitetipspro and submit confirmation code.'
+    }
+  },
+  {
+    method: 'wise',
+    isEnabled: true,
+    settings: {
+      email: 'payments@elitetipspro.com',
+      instructions: 'Send Wise transfer to email above and submit transfer reference.'
+    }
+  },
+  {
+    method: 'stripe',
+    isEnabled: true,
+    settings: {}
+  },
+  {
+    method: 'paypal',
+    isEnabled: true,
+    settings: {}
+  },
+  {
+    method: 'mpesa',
+    isEnabled: true,
+    settings: { exchangeRate: '130' }
+  }
+];
+
+async function ensureDefaultPaymentSettings() {
+  try {
+    for (const def of DEFAULT_METHODS) {
+      const existing = await PaymentSettings.findOne({ method: def.method });
+      if (!existing) {
+        await PaymentSettings.create({
+          method: def.method,
+          isEnabled: def.isEnabled,
+          settings: def.settings
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Error ensuring default payment settings:', err);
+  }
+}
+
+// @desc    Get all payment settings (admin)
 // @route   GET /api/settings/payments
 // @access  Private/Admin
 export const getPaymentSettings = async (req: AuthRequest, res: Response) => {
   try {
+    await ensureDefaultPaymentSettings();
     const allSettings = await PaymentSettings.find({});
 
     // Return all methods with their enabled status and masked keys
@@ -144,6 +268,7 @@ const updateEnvFile = (method: string, settings: Record<string, string>) => {
 // @access  Public
 export const getEnabledPaymentMethods = async (req: Request, res: Response) => {
   try {
+    await ensureDefaultPaymentSettings();
     const allSettings = await PaymentSettings.find({});
 
     // Fields that are safe to expose publicly (non-API-key fields)
