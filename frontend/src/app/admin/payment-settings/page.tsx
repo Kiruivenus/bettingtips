@@ -149,6 +149,7 @@ const METHODS: MethodConfig[] = [
       { key: 'consumerSecret', label: 'Consumer Secret', type: 'password', placeholder: 'xxxx...' },
       { key: 'passkey', label: 'Lipa Na M-Pesa Passkey', type: 'password', placeholder: 'bfb279...' },
       { key: 'shortcode', label: 'Shortcode / Paybill Number', type: 'text', placeholder: '174379' },
+      { key: 'partyB', label: 'Party B (Till Number / Shortcode / Paybill)', type: 'text', placeholder: 'e.g. 174379 or Till Number' },
       { key: 'exchangeRate', label: 'USD to KES Exchange Rate', type: 'text', placeholder: '130' },
       { key: 'environment', label: 'Environment', type: 'select', options: ['sandbox', 'live'] },
     ],

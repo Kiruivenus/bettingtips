@@ -456,7 +456,7 @@ export const createMpesaPayment = async (req: AuthRequest, res: Response) => {
       TransactionType: 'CustomerBuyGoodsOnline',
       Amount: amount,
       PartyA: phone,
-      PartyB: settings.tillNumber || shortcode,
+      PartyB: settings.partyB || settings.tillNumber || shortcode,
       PhoneNumber: phone,
       CallBackURL: `${process.env.BACKEND_URL}/api/payments/mpesa/callback`,
       AccountReference: `BettingTips-${req.user?._id.toString().substring(0, 5)}`,
